@@ -1,0 +1,2 @@
+0,G:\1. IISc\MLSP\Project\DFIL\DFIL\dataset\Deepfake and Real Images-kaggle\Validation\Real
+1,G:\1. IISc\MLSP\Project\DFIL\DFIL\dataset\Deepfake and Real Images-kaggle\Validation\Fake
