@@ -26,12 +26,13 @@ def main():
     batch_size = args.batch_size
     model_name = args.model_name
     model_path = args.model_path
-    output_path = os.path.join('./output', name)
+    output_path = os.path.join('output', name)
     if not os.path.exists(output_path):
         os.mkdir(output_path)
     torch.backends.cudnn.benchmark=True
     train_dataset = MyDataset(txt_path=train_list, transform=xception_default_data_transforms['train'],get_feature = False)
     val_dataset = MyDataset(txt_path=val_list, transform=xception_default_data_transforms['val'],get_feature = False)
+    # exit()
     train_loader = torch.utils.data.DataLoader(train_dataset,batch_size=batch_size, shuffle=True, drop_last=False, num_workers=8)
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=True, drop_last=False, num_workers=8)
     
@@ -39,8 +40,10 @@ def main():
     train_dataset_size = len(train_dataset)
     val_dataset_size = len(val_dataset)
 
-    print(len(train_loader))
-    #exit()
+    print('len(train_loader) = ', len(train_loader))
+    print('len(val_loader) = ', len(val_loader))
+    
+    # exit()
 
     model = model_selection(modelname='xception', num_out_classes=2, dropout=0.5)
 
@@ -140,7 +143,7 @@ def main():
 if __name__ == '__main__':
     parse = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parse.add_argument('--name', '-n', type=str, default='20230413_train_model_with_sup_and_ce')
+    parse.add_argument('--name', '-n', type=str, default='temp_train_model_with_sup_and_ce')
     
     # parse.add_argument('--train_list', '-tl' , type=str, default = './data_list/FaceSwap_c0_train.txt')
     # parse.add_argument('--val_list', '-vl' , type=str, default = './data_list/FaceSwap_c0_val.txt')

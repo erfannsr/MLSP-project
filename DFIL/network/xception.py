@@ -154,7 +154,9 @@ class Xception(nn.Module):
         self.conv4 = SeparableConv2d(1536,2048,3,1,1)
         self.bn4 = nn.BatchNorm2d(2048)
 
-        self.fc = nn.Linear(2048, num_classes)
+        # self.fc = nn.Linear(2048, num_classes)
+        print(f"num classes = {self.num_classes}")
+        self.fc = nn.Linear(in_features=2048, out_features=self.num_classes)
         
 
         # #------- init weights --------
@@ -370,22 +372,55 @@ class Xception_concat(nn.Module):
         return x, conv4_x
         '''
 
-
+import pretrainedmodels
 def xception(num_classes=1000, pretrained='imagenet'):
+    # print(f"377: num classes = {num_classes}")
     model = Xception(num_classes=num_classes)
     if pretrained:
-        settings = pretrained_settings['xception'][pretrained]
-        assert num_classes == settings['num_classes'], \
-            "num_classes should be {}, but is {}".format(settings['num_classes'], num_classes)
+        model = pretrainedmodels.__dict__['xception'](num_classes=num_classes, pretrained=pretrained)
 
-        model = Xception(num_classes=num_classes)
-        model.load_state_dict(model_zoo.load_url(settings['url']))
+        # Get the pretrained settings from the model
+        settings = pretrainedmodels.pretrained_settings['xception'][pretrained]
+        
+        # Ensure num_classes matches pretrained settings (only relevant for classification)
+        if 'num_classes' in settings and num_classes != settings['num_classes']:
+            raise ValueError(f"num_classes should be {settings['num_classes']}, but got {num_classes}.")
 
+        # Print settings for debugging
+        print("Pretrained Model Settings:")
+        for key, value in settings.items():
+            print(f"{key}: {value}")
+
+        # Print available layers in the checkpoint
+        checkpoint_url = settings['url']
+        print(f"\nDownloading and checking layers from: {checkpoint_url}")
+        checkpoint = torch.utils.model_zoo.load_url(checkpoint_url)
+        print("Checkpoint layers:", list(checkpoint.keys())[:10])  # Print first 10 layers
+
+        # Load state dictionary (uncomment this when ready to load weights)
+        # model.load_state_dict(checkpoint)
+
+        # Set model metadata attributes
         model.input_space = settings['input_space']
         model.input_size = settings['input_size']
         model.input_range = settings['input_range']
         model.mean = settings['mean']
         model.std = settings['std']
+
+        # settings = pretrained_settings['xception'][pretrained]
+        # assert num_classes == settings['num_classes'], \
+        #     "num_classes should be {}, but is {}".format(settings['num_classes'], num_classes)
+
+        # model = Xception(num_classes=num_classes)
+        # print(settings)
+        # print(model_zoo.load_url(settings['url']).keys())
+        # # model.load_state_dict(model_zoo.load_url(settings['url']))
+
+        # model.input_space = settings['input_space']
+        # model.input_size = settings['input_size']
+        # model.input_range = settings['input_range']
+        # model.mean = settings['mean']
+        # model.std = settings['std']
 
     # TODO: ugly
     model.last_linear = model.fc

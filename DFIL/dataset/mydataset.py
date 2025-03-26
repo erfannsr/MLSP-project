@@ -51,10 +51,13 @@ class MyDataset(Dataset):
                 #print(words[0],words[1])
                 # print(words)
                 # print (words[2].rjust(5,'0'))
+                # print(words)
+                # break
 
                 image_file = words[1]
-                path = os.path.join(image_file,'*.png')
+                path = os.path.join(image_file,'*.jpg')
                 image_filenames = sorted(glob.glob(path))
+                # print(path)
                 #print(image_filenames)
 
                 #imgs.append((words[1]+'/out'+words[2].rjust(5,'0')+'.png', int(words[0])))
