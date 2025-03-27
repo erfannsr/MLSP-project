@@ -80,10 +80,12 @@ def main():
             # print(labels)
             # exit()
             optimizer.zero_grad()
-            outputs,fc_features = model(image)
+            # outputs,fc_features = model(image)
+            outputs = model(image)
             _, preds = torch.max(outputs.data, 1)
 
-            #fc_features = model.module.model.features(image)
+            # BELOW LINE UNCOMMENTED
+            fc_features = model.module.model.features(image)
             fc_features = F.adaptive_avg_pool2d(fc_features, (1, 1)) 
             fc_features = fc_features.view(fc_features.size(0), -1)
             # fc_features = fc_features.unsqueeze(dim = 1)
@@ -119,7 +121,7 @@ def main():
                 image = image.cuda()
                 labels = labels.cuda()
 
-                outputs,features = model(image)
+                outputs = model(image) #,features
                 _, preds = torch.max(outputs.data, 1)
                 loss = criterion(outputs, labels)
                 val_loss += loss.data.item()
