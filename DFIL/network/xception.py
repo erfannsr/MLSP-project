@@ -387,9 +387,11 @@ def xception(num_classes=1000, pretrained='imagenet'):
             raise ValueError(f"num_classes should be {settings['num_classes']}, but got {num_classes}.")
 
         # Print settings for debugging
-        print("Pretrained Model Settings:")
+        print("PRETRAINED Model Settings:")
         for key, value in settings.items():
             print(f"{key}: {value}")
+
+        # exit()
 
         # Print available layers in the checkpoint
         checkpoint_url = settings['url']
@@ -398,7 +400,13 @@ def xception(num_classes=1000, pretrained='imagenet'):
         print("Checkpoint layers:", list(checkpoint.keys())[:10])  # Print first 10 layers
 
         # Load state dictionary (uncomment this when ready to load weights)
-        # model.load_state_dict(checkpoint)
+        # for key, value in checkpoint.items():
+        #     print(key)
+        checkpoint['last_linear.weight'] = checkpoint.pop('fc.weight')
+        checkpoint['last_linear.bias'] = checkpoint.pop('fc.bias')
+
+
+        model.load_state_dict(checkpoint)
 
         # Set model metadata attributes
         model.input_space = settings['input_space']
@@ -407,14 +415,22 @@ def xception(num_classes=1000, pretrained='imagenet'):
         model.mean = settings['mean']
         model.std = settings['std']
 
+        ###################### ORIGINAL CODE ##########################
         # settings = pretrained_settings['xception'][pretrained]
         # assert num_classes == settings['num_classes'], \
         #     "num_classes should be {}, but is {}".format(settings['num_classes'], num_classes)
 
+        # # Print settings for debugging
+        # print("DFIL Xception Pretrained Model Settings:")
+        # for key, value in settings.items():
+        #     print(f"{key}: {value}")
+
+        # # exit()
+
         # model = Xception(num_classes=num_classes)
         # print(settings)
         # print(model_zoo.load_url(settings['url']).keys())
-        # # model.load_state_dict(model_zoo.load_url(settings['url']))
+        # model.load_state_dict(model_zoo.load_url(settings['url']))
 
         # model.input_space = settings['input_space']
         # model.input_size = settings['input_size']
@@ -422,9 +438,9 @@ def xception(num_classes=1000, pretrained='imagenet'):
         # model.mean = settings['mean']
         # model.std = settings['std']
 
-    # TODO: ugly
-    model.last_linear = model.fc
-    del model.fc
+    # # TODO: ugly
+    # model.last_linear = model.fc
+    # del model.fc
     return model
 
 def xception_concat(num_classes=1000):

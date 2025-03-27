@@ -1,2 +1,2 @@
-0,G:\1. IISc\MLSP\Project\DFIL\DFIL\dataset\Deepfake and Real Images-kaggle\Train\Real
-1,G:\1. IISc\MLSP\Project\DFIL\DFIL\dataset\Deepfake and Real Images-kaggle\Train\Fake
+0,/home/erfan/MLSP project/Datasets/Deepfake and Real images-Kaggle/Train/Real
+1,/home/erfan/MLSP project/Datasets/Deepfake and Real images-Kaggle/Train/Fake
