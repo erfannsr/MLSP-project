@@ -15,6 +15,8 @@ import math
 import glob
 from torch.nn import functional as F
 import torch.nn.functional as F
+from torchsummary import summary
+
 
 def main():
     args = parse.parse_args()
@@ -33,9 +35,13 @@ def main():
     model = model_selection(modelname='xception', num_out_classes=2, dropout=0.5)
     model.load_state_dict(torch.load(model_path))
     if isinstance(model, torch.nn.DataParallel):
+        print("is instance")
         model = model.module
     model = model.cuda()
     model.eval()
+
+    print(model)
+    summary(model,(3, 299, 299),batch_size=1,device="cuda")
 
 
     file_image_dir = test_list
@@ -79,7 +85,9 @@ def main():
         for (image, labels) in test_loader:
             image = image.cuda()
             labels = labels.cuda()
-            outputs,fc_features = model(image)
+            outputs = model(image) #,fc_features
+
+            fc_features = model.model.features(image)
             fc_features = F.adaptive_avg_pool2d(fc_features, (1, 1)) 
             fc_features = fc_features.view(fc_features.size(0), -1)
             for i in range(len(labels)):
@@ -120,7 +128,9 @@ def main():
         for (image, labels) in test_loader:
             image = image.cuda()
             labels = labels.cuda()
-            outputs,fc_features = model(image)
+            # outputs,fc_features = model(image)
+            outputs = model(image) #,fc_features
+            fc_features = model.model.features(image)
             fc_features = F.adaptive_avg_pool2d(fc_features, (1, 1)) 
             fc_features = fc_features.view(fc_features.size(0), -1)
             _, preds = torch.max(outputs.data, 1)
@@ -166,6 +176,7 @@ def main():
     print(len(image_entropy))
     print(len(image_pred))
     print(len(image_label))
+    print(len(dis))
     dict = {'image_info': res, 
             'image_confidence': image_confidence, 
             'image_margin': image_margin, 

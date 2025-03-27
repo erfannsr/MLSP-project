@@ -24,6 +24,7 @@ def main():
     test_dataset = MyDataset(txt_path=test_list, transform=xception_default_data_transforms['test'], get_feature = True)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False, drop_last=False, num_workers=8)
     test_dataset_size = len(test_dataset)
+    print(f"Len Train dataset = {test_dataset_size}")
     corrects = 0
     acc = 0
     #model = torchvision.models.densenet121(num_classes=2)
@@ -31,35 +32,52 @@ def main():
     model = model_selection(modelname='xception', num_out_classes=2, dropout=0.5)
     model.load_state_dict(torch.load(model_path))
     if isinstance(model, torch.nn.DataParallel):
+        print("is instance")
         model = model.module
-    model = model.cuda()
-    model.eval()
-    print(dir(model.model))
     
-    # summary(model,(3, 299, 299),batch_size=1,device="cuda")
+    # print("model:")
+    # print(dir(model.model))
+    
+
+    
 
     sum = 0
-    model.model.last_linear = nn.Sequential()
+    model.model.last_linear = nn.Sequential(
+        nn.Dropout(p=0.5, inplace=False),
+        nn.Linear(in_features=2048, out_features=2, bias=True),
+    )
+    model = model.cuda()
+    model.eval()
+
+    # print(model)
+    # summary(model,(3, 299, 299),batch_size=1,device="cuda")
+
     feature = []
     with torch.no_grad():
         for (image, labels) in test_loader:
             image = image.cuda()
-            #print(image.size())
+            # print(image.size())
             labels = labels.cuda()
-            outputs,_ = model(image)
-            print(outputs.shape)
+            outputs = model(image) #,_
+            # print(outputs.shape) 
             feature.append(outputs)
             #exit()
-        #     _, preds = torch.max(outputs.data, 1)
-        #     prob = nn.functional.softmax(outputs.data,dim=1)
+            _, preds = torch.max(outputs.data, 1)
+            # print(f'size of data loader: {len(labels)}')
+            # print(f'outputs.shape = {outputs.shape}')
+            # print(outputs.data)
+            # print(preds)
+            # print(labels)
+            # prob = nn.functional.softmax(outputs.data,dim=1)
     
-        #     # calculate the difficult of sample 
+            # calculate the difficult of sample 
 
-        #     corrects += torch.sum(preds == labels.data).to(torch.float32)
-        #     print('Iteration Acc {:.4f}'.format(torch.sum(preds == labels.data).to(torch.float32)/batch_size))
-        # acc = corrects / test_dataset_size
-        # print('Test Acc: {:.4f}'.format(acc))
-    print(feature)
+            corrects += torch.sum(preds == labels.data).to(torch.float32)
+            print('Iteration Acc {:.4f}'.format(torch.sum(preds == labels.data).to(torch.float32)/batch_size))
+            # exit()
+        acc = corrects / test_dataset_size
+        print('Test Acc: {:.4f}'.format(acc))
+    # print(feature)
     a = feature[0]
     for i in range(len(feature)):
         if i == 0:

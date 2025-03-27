@@ -14,6 +14,8 @@ from dataset.transform import xception_default_data_transforms
 from dataset.mydataset import MyDataset
 from SupConLoss import SupConLoss
 import torch.nn.functional as F
+from torchsummary import summary
+
 
 
 def main():
@@ -61,6 +63,10 @@ def main():
     criterion_supcon = SupConLoss()
 
     model = nn.DataParallel(model)
+
+    # print(model)
+    # summary(model,(3, 299, 299),batch_size=1,device="cuda")
+
     best_model_wts = model.state_dict()
     best_acc = 0.0
     iteration = 0
@@ -81,8 +87,18 @@ def main():
             # exit()
             optimizer.zero_grad()
             # outputs,fc_features = model(image)
+            # print(image.size())
             outputs = model(image)
             _, preds = torch.max(outputs.data, 1)
+
+            # print(f'size of data loader: {len(labels)}')
+            # print(f'outputs.shape = {outputs.shape}')
+            # print(outputs.data)
+            # print(preds)
+            # print(labels)
+
+            # exit()
+
 
             # BELOW LINE UNCOMMENTED
             fc_features = model.module.model.features(image)
