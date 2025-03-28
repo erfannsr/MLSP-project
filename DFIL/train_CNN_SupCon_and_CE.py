@@ -168,8 +168,8 @@ if __name__ == '__main__':
     parse.add_argument('--train_list', '-tl' , type=str, default = 'balance_train.txt')
     parse.add_argument('--val_list', '-vl' , type=str, default = 'val.txt')
     
-    parse.add_argument('--batch_size', '-bz', type=int, default=160)
-    parse.add_argument('--epoches', '-e', type=int, default='20')
+    parse.add_argument('--batch_size', '-bz', type=int, default=16)
+    parse.add_argument('--epoches', '-e', type=int, default='10')
 
     # parse.add_argument('--model_name', '-mn', type=str, default='fs_c0_299.pkl')
     parse.add_argument('--model_name', '-mn', type=str, default='demo.pkl')    
