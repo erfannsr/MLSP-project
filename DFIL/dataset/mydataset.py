@@ -35,7 +35,9 @@ class MyDataset(Dataset):
                 #imgs.append((words[1]+'/out'+words[2].rjust(5,'0')+'.png', int(words[0])))
                 for i in image_filenames:
                     imgs.append((i, int(words[0])))
-                # print(imgs[0])
+            random.shuffle(imgs)
+            print(imgs[0], imgs[1000], imgs[10000], imgs[-1])
+            # exit()
             # fh = open(txt_path, 'r')
             # for line in fh:
                 # line = line.rstrip()
@@ -79,13 +81,15 @@ class MyDataset(Dataset):
                 image_file = words[1]
                 path = os.path.join(image_file,'*.jpg')
                 image_filenames = sorted(glob.glob(path))
-                # print(path)
-                #print(image_filenames)
+                print(path)
+                
+                # print(image_filenames)
+                # exit()
 
                 #imgs.append((words[1]+'/out'+words[2].rjust(5,'0')+'.png', int(words[0])))
                 for i in image_filenames:
                     imgs.append((i, int(words[0])))
-                print(imgs[0])
+                print(imgs[0], imgs[1])
 
         print("the number of images: ",len(imgs))
         self.imgs = imgs

@@ -121,6 +121,8 @@ class SupConLoss(nn.Module):
                   else torch.device('cpu'))
         features = F.normalize(features, p=2, dim=1)
         batch_size = features.shape[0]
+        # print(f"features: {features}")
+        # exit()
         # 关于labels参数
         if labels is not None and mask is not None:  # labels和mask不能同时定义值，因为如果有label，那么mask是需要根据Label得到的
             raise ValueError('Cannot define both `labels` and `mask`') 

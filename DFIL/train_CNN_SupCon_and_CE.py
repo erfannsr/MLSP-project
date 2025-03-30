@@ -8,7 +8,7 @@ import argparse
 import os
 import cv2
 from tqdm import tqdm
-from network.models import model_selection
+from network.models import model_selection, feature_model
 from network.mesonet import Meso4, MesoInception4
 from dataset.transform import xception_default_data_transforms
 from dataset.mydataset import MyDataset
@@ -47,13 +47,17 @@ def main():
     
     # exit()
 
-    model = model_selection(modelname='xception', num_out_classes=2, dropout=0.5)
+    model = model_selection(modelname='resnet18', num_out_classes=2, dropout=0.5)
+    feature_extractor = feature_model('resnet18', n_feat=512)
+    feature_extractor.cuda()
 
     if continue_train:
         print('continue train path:',model_path)
         print('train_list path:',train_list)
         print('val_list path:',val_list)
         model.load_state_dict(torch.load(model_path))
+        print("Loading successful")
+        # exit()
 
     model = model.cuda()
     criterion = nn.CrossEntropyLoss()
@@ -79,6 +83,8 @@ def main():
         val_loss = 0.0
         val_corrects = 0.0
         for (image, labels) in train_loader:
+            # print(image, labels)
+            # exit()
             iter_loss = 0.0
             iter_corrects = 0.0
             image = image.cuda()
@@ -90,6 +96,7 @@ def main():
             # print(image.size())
             outputs = model(image)
             _, preds = torch.max(outputs.data, 1)
+            
 
             # print(f'size of data loader: {len(labels)}')
             # print(f'outputs.shape = {outputs.shape}')
@@ -98,14 +105,33 @@ def main():
             # print(labels)
 
             # exit()
+            # print(model.module.model.features)
+            # exit()
 
+            ### CUSTOM FETURE EXTRACTOR
+            fc_features = feature_extractor(image)
+            # print(fc_features, fc_features.shape)
+            # exit()
 
             # BELOW LINE UNCOMMENTED
-            fc_features = model.module.model.features(image)
-            fc_features = F.adaptive_avg_pool2d(fc_features, (1, 1)) 
-            fc_features = fc_features.view(fc_features.size(0), -1)
+            # fc_features = model.module.model.features(image) #.features
+            # print(fc_features, outputs.data)
+            # print(fc_features, fc_features.shape)
+            # exit()
+            # fc_features = F.adaptive_avg_pool2d(fc_features, (1, 1)) 
+            # print(fc_features.shape)
+            # fc_features = fc_features.view(fc_features.size(0), -1)
+            # print(fc_features.shape)
             # fc_features = fc_features.unsqueeze(dim = 1)
+            # print(fc_features.shape)
             # fc_features = F.normalize(fc_features, dim=2)
+            # print(fc_features.shape)
+            
+            # print(fc_features, fc_features.shape)
+            # print(preds)
+            # print(labels)
+            # exit()
+
 
             loss1 = criterion(outputs, labels)
 
@@ -125,7 +151,7 @@ def main():
             iter_corrects = torch.sum(preds == labels.data).to(torch.float32)
             train_corrects += iter_corrects
             iteration += 1
-            if not (iteration % 20):
+            if not (iteration % 50):
                 print('iteration {} train loss: {:.8f} Acc: {:.8f}'.format(iteration, iter_loss / batch_size, iter_corrects / batch_size))
         epoch_loss = train_loss / train_dataset_size
         epoch_acc = train_corrects / train_dataset_size

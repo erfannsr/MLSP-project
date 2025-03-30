@@ -1,0 +1,30 @@
+????
+('/home/erfan/MLSP project/Datasets/Deepfake and Real images-Kaggle/Train_small2/Real/real_0.jpg', 0)
+('/home/erfan/MLSP project/Datasets/Deepfake and Real images-Kaggle/Train_small2/Real/real_0.jpg', 0)
+the number of images:  70002
+????
+('/home/erfan/MLSP project/Datasets/Deepfake and Real images-Kaggle/Validation_small2/Real/real_0.jpg', 0)
+('/home/erfan/MLSP project/Datasets/Deepfake and Real images-Kaggle/Validation_small2/Real/real_0.jpg', 0)
+the number of images:  19715
+len(train_loader) =  4376
+len(val_loader) =  1233
+num classes = 1000
+PRETRAINED Model Settings:
+url: http://data.lip6.fr/cadene/pretrainedmodels/xception-43020ad28.pth
+input_space: RGB
+input_size: [3, 299, 299]
+input_range: [0, 1]
+mean: [0.5, 0.5, 0.5]
+std: [0.5, 0.5, 0.5]
+num_classes: 1000
+scale: 0.8975
+
+Downloading and checking layers from: http://data.lip6.fr/cadene/pretrainedmodels/xception-43020ad28.pth
+Checkpoint layers: ['conv1.weight', 'bn1.weight', 'bn1.bias', 'bn1.running_mean', 'bn1.running_var', 'conv2.weight', 'bn2.weight', 'bn2.bias', 'bn2.running_mean', 'bn2.running_var']
+pretrained true
+Using dropout 0.5
+continue train path: /home/erfan/MLSP project/MLSP-project/DFIL/output/train_first_model_half_data_10_epochs/best.pkl
+train_list path: train.txt
+val_list path: validation.txt
+Epoch 1/10
+----------

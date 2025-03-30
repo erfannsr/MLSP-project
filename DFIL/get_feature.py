@@ -29,7 +29,7 @@ def main():
     acc = 0
     #model = torchvision.models.densenet121(num_classes=2)
     # model = model_selection(modelname='SupCON', num_out_classes=2, dropout=0.5)
-    model = model_selection(modelname='xception', num_out_classes=2, dropout=0.5)
+    model = model_selection(modelname='resnet18', num_out_classes=2, dropout=0.5)
     model.load_state_dict(torch.load(model_path))
     if isinstance(model, torch.nn.DataParallel):
         print("is instance")
@@ -51,7 +51,7 @@ def main():
 
     # print(model)
     # summary(model,(3, 299, 299),batch_size=1,device="cuda")
-
+    iteration = 0
     feature = []
     with torch.no_grad():
         for (image, labels) in test_loader:
@@ -68,12 +68,17 @@ def main():
             # print(outputs.data)
             # print(preds)
             # print(labels)
+            # exit()
             # prob = nn.functional.softmax(outputs.data,dim=1)
     
             # calculate the difficult of sample 
 
             corrects += torch.sum(preds == labels.data).to(torch.float32)
-            print('Iteration Acc {:.4f}'.format(torch.sum(preds == labels.data).to(torch.float32)/batch_size))
+            iteration += 1
+            if not (iteration % 50):
+                print('Iteration Acc {:.4f}'.format(torch.sum(preds == labels.data).to(torch.float32)/batch_size))
+                print(preds)
+                print(labels)
             # exit()
         acc = corrects / test_dataset_size
         print('Test Acc: {:.4f}'.format(acc))

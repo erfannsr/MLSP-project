@@ -13,6 +13,7 @@ import torch.nn.functional as F
 from network.xception import xception, xception_concat
 import math
 import torchvision
+import timm 
 
 
 def return_pytorch04_xception(pretrained=False):
@@ -24,7 +25,7 @@ def return_pytorch04_xception(pretrained=False):
         model.fc = model.last_linear
         del model.last_linear
         state_dict = torch.load(
-            '.\pretrain_model\xception-b5690688.pth')
+            '.\pretrain_model\\xception-b5690688.pth')
         for name, weights in state_dict.items():
             if 'pointwise' in name:
                 state_dict[name] = weights.unsqueeze(-1).unsqueeze(-1)
@@ -153,6 +154,9 @@ def model_selection(modelname, num_out_classes,
         return TransferModel(modelchoice='resnet18', dropout=dropout,
                              num_out_classes=num_out_classes)
     #    , \224, True, ['image'], None
+    elif modelname == 'resnet50':
+        return TransferModel(modelchoice='resnet50', dropout=dropout,
+                             num_out_classes=num_out_classes)
     elif modelname == 'xception_concat':
         return TransferModel(modelchoice='xception_concat',
                              num_out_classes=num_out_classes)
@@ -161,6 +165,46 @@ def model_selection(modelname, num_out_classes,
                              num_out_classes=num_out_classes)
     else:
         raise NotImplementedError(modelname)
+
+
+class FeatureExtractor(nn.Module):
+    def __init__(self, modelchoice, feature_dim=128):
+        super().__init__()
+        self.modelchoice = modelchoice
+        if modelchoice == 'resnet50' or modelchoice == 'resnet18':
+            if self.modelchoice == 'resnet18':
+                self.encoder = torchvision.models.resnet18(pretrained=True)
+                self.encoder.fc = nn.Linear(self.encoder.fc.in_features, feature_dim)  # Custom projection
+                self.feature_dim = feature_dim
+            if self.modelchoice == 'resnet50':
+                self.encoder = torchvision.models.resnet50(pretrained=True)
+                self.encoder.fc = nn.Linear(self.encoder.fc.in_features, 2048)  # Custom projection
+                self.feature_dim = feature_dim
+        
+        if self.modelchoice == 'xception':
+            # self.encoder = torchvision.models.get_model("xception", pretrained=True)
+            # self.encoder.fc = nn.Linear(self.encoder.fc.in_features, 2048)
+            self.encoder = return_pytorch04_xception(pretrained=False)
+            print('pretrained true')
+            num_ftrs = self.encoder.last_linear.in_features
+            # self.encoder.fc = nn.Identity()
+            self.encoder.last_linear = nn.Linear(num_ftrs, 2048)
+            # print(num_ftrs, self.encoder.fc)
+            # exit()
+
+    def forward(self, x):
+        features = self.encoder(x)
+        # print(features.shape); exit()
+        return F.normalize(features, dim=1)  # L2 Normalize 
+
+def feature_model(modelname, n_feat=512):
+    if modelname == 'resnet18':
+        return FeatureExtractor(modelchoice='resnet18', feature_dim=n_feat)
+    if modelname == 'resnet50':
+        return FeatureExtractor(modelchoice='resnet50', feature_dim=n_feat)
+    if modelname == 'xception':
+        return FeatureExtractor(modelchoice='xception' )
+
 
 
 if __name__ == '__main__':
