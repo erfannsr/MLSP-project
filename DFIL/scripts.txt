@@ -3,6 +3,7 @@ python train_CNN_SupCon_and_CE.py --name 'train_first_model_half_data_10_epochs'
 python train_CNN_SupCon_and_CE.py --name "train_first_model_2nd_half_data_10_epochs" -tl 'train.txt' -vl 'validation.txt' -bz 16 -e 10 --continue_train True --model_path "/home/erfan/MLSP project/MLSP-project/DFIL/output/train_first_model_half_data_10_epochs/best.pkl"
 
 python get_feature.py -bz 8 -tl 'test.txt' --model_path 'output/temp_train_model_with_sup_and_ce/best.pkl'
+
 python get_feature.py -bz 8 -tl 'test.txt' --model_path '/home/erfan/MLSP project/MLSP-project/DFIL/output/train_first_model_resnet18_first_half/best.pkl'
 
 python get_image_info.py -tl 'test.txt' -mp 'output/temp_train_model_with_sup_and_ce/best.pkl'
