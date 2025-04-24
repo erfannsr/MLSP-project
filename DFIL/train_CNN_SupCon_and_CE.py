@@ -10,7 +10,7 @@ import cv2
 from tqdm import tqdm
 from network.models import model_selection, feature_model
 from network.mesonet import Meso4, MesoInception4
-from dataset.transform import xception_default_data_transforms
+from dataset.transform import xception_default_data_transforms, transforms_224
 from dataset.mydataset import MyDataset
 from SupConLoss import SupConLoss
 import torch.nn.functional as F
@@ -28,12 +28,16 @@ def main():
     batch_size = args.batch_size
     model_name = args.model_name
     model_path = args.model_path
+    device = args.device
+    # print(device)
+    # exit()
+
     output_path = os.path.join('output', name)
     if not os.path.exists(output_path):
         os.mkdir(output_path)
     torch.backends.cudnn.benchmark=True
-    train_dataset = MyDataset(txt_path=train_list, transform=xception_default_data_transforms['train'],get_feature = False)
-    val_dataset = MyDataset(txt_path=val_list, transform=xception_default_data_transforms['val'],get_feature = False)
+    train_dataset = MyDataset(txt_path=train_list, transform=transforms_224['train'],get_feature = False)
+    val_dataset = MyDataset(txt_path=val_list, transform=transforms_224['val'],get_feature = False)
     # exit()
     train_loader = torch.utils.data.DataLoader(train_dataset,batch_size=batch_size, shuffle=True, drop_last=False, num_workers=8)
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=True, drop_last=False, num_workers=8)
@@ -49,7 +53,7 @@ def main():
 
     model = model_selection(modelname='resnet18', num_out_classes=2, dropout=0.5)
     feature_extractor = feature_model('resnet18', n_feat=512)
-    feature_extractor.cuda()
+    feature_extractor.to(device)
 
     if continue_train:
         print('continue train path:',model_path)
@@ -59,7 +63,9 @@ def main():
         print("Loading successful")
         # exit()
 
-    model = model.cuda()
+    model = model.to(device)
+    # print(next(model.parameters()).is_cuda)
+    # exit()
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.0005, betas=(0.9, 0.999), eps=1e-08, weight_decay = 1e-6)
     scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
@@ -87,8 +93,8 @@ def main():
             # exit()
             iter_loss = 0.0
             iter_corrects = 0.0
-            image = image.cuda()
-            labels = labels.cuda()
+            image = image.to(device)
+            labels = labels.to(device)
             # print(labels)
             # exit()
             optimizer.zero_grad()
@@ -160,8 +166,8 @@ def main():
         model.eval()
         with torch.no_grad():
             for (image, labels) in val_loader:
-                image = image.cuda()
-                labels = labels.cuda()
+                image = image.to(device)
+                labels = labels.to(device)
 
                 outputs = model(image) #,features
                 _, preds = torch.max(outputs.data, 1)
@@ -196,6 +202,7 @@ if __name__ == '__main__':
     
     parse.add_argument('--batch_size', '-bz', type=int, default=16)
     parse.add_argument('--epoches', '-e', type=int, default='10')
+    parse.add_argument('--device', type=str, required=True, help="Check with nvidia-smi")
 
     # parse.add_argument('--model_name', '-mn', type=str, default='fs_c0_299.pkl')
     parse.add_argument('--model_name', '-mn', type=str, default='demo.pkl')    

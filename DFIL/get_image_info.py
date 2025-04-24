@@ -8,7 +8,7 @@ import argparse
 import os
 import cv2
 from network.models import model_selection
-from dataset.transform import xception_default_data_transforms
+from dataset.transform import xception_default_data_transforms, transforms_224
 from dataset.mydataset import MyDataset
 import pandas as pd
 import math
@@ -23,8 +23,10 @@ def main():
     test_list = args.test_list
     batch_size = args.batch_size
     model_path = args.model_path
+    device = args.device
+
     torch.backends.cudnn.benchmark=True
-    test_dataset = MyDataset(txt_path=test_list, transform=xception_default_data_transforms['test'],get_feature=True)
+    test_dataset = MyDataset(txt_path=test_list, transform=transforms_224['test'],get_feature=True)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False, drop_last=False, num_workers=8)
     test_dataset_size = len(test_dataset)
 
@@ -32,12 +34,12 @@ def main():
     corrects = 0
     acc = 0
     #model = torchvision.models.densenet121(num_classes=2)
-    model = model_selection(modelname='xception', num_out_classes=2, dropout=0.5)
+    model = model_selection(modelname='resnet18', num_out_classes=2, dropout=0.5)
     model.load_state_dict(torch.load(model_path))
     if isinstance(model, torch.nn.DataParallel):
         print("is instance")
         model = model.module
-    model = model.cuda()
+    model = model.to(device)
     model.eval()
 
     print(model)
@@ -83,8 +85,8 @@ def main():
     num_1 = 0
     with torch.no_grad():
         for (image, labels) in test_loader:
-            image = image.cuda()
-            labels = labels.cuda()
+            image = image.to(device)
+            labels = labels.to(device)
             outputs = model(image) #,fc_features
 
             fc_features = model.model.features(image)
@@ -126,8 +128,8 @@ def main():
     bug = 0
     with torch.no_grad():
         for (image, labels) in test_loader:
-            image = image.cuda()
-            labels = labels.cuda()
+            image = image.to(device)
+            labels = labels.to(device)
             # outputs,fc_features = model(image)
             outputs = model(image) #,fc_features
             fc_features = model.model.features(image)
@@ -196,6 +198,7 @@ if __name__ == '__main__':
     parse = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parse.add_argument('--batch_size', '-bz', type=int, default=256)
+    parse.add_argument('--device', type=str, required=True, help="Check with nvidia-smi")
     #parse.add_argument('--test_list', '-tl', type=str, default='./data_list/Deepfakes_c0_test.txt')
     parse.add_argument('--test_list', '-tl', type=str, default='2500_real_and_2500_fake_train.txt')
     #parse.add_argument('--model_path', '-mp', type=str, default='./pretrained_model/df_c0_best.pkl')

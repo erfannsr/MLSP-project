@@ -36,8 +36,8 @@ class MyDataset(Dataset):
                 for i in image_filenames:
                     imgs.append((i, int(words[0])))
             random.shuffle(imgs)
-            print(imgs[0], imgs[1000], imgs[10000], imgs[-1])
-            # exit()
+            # print(imgs[0], imgs[1000], imgs[5000], imgs[-1]) # to check if its reading images-labels correctly
+             # exit()
             # fh = open(txt_path, 'r')
             # for line in fh:
                 # line = line.rstrip()
