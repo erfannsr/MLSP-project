@@ -10,9 +10,9 @@ import cv2
 import random
 import numpy as np
 from tqdm import tqdm
-from network.models import model_selection
+from network.models import model_selection, feature_model
 from network.mesonet import Meso4, MesoInception4
-from dataset.transform import xception_default_data_transforms
+from dataset.transform import xception_default_data_transforms, transforms_224
 from dataset.mydataset import MyDataset
 from torch.nn import functional as F
 from SupConLoss import SupConLoss
@@ -53,57 +53,76 @@ def main():
     args = parse.parse_args()
     add_memory = args.add_memory
     name = args.name
-    continue_train = args.continue_train
+    # continue_train = args.continue_train
+    continue_train = False                          # Set manually as it doesnt read from the parser
     train_list = args.train_list
     val_list = args.val_list
     memory_list = args.memory_list
     epoches = args.epoches
     batch_size = args.batch_size
+    device = args.device
     model_name = args.model_name
     model_path = args.model_path
     output_path = os.path.join('./output', name)
     teacher_model_path = args.teacher_model_path
+    # print(teacher_model_path)
+    # print(continue_train)
+    # exit()
     if not os.path.exists(output_path):
         os.mkdir(output_path)
     torch.backends.cudnn.benchmark=True
 
 
-    train_dataset = MyDataset(txt_path=train_list, transform=xception_default_data_transforms['train'],get_feature = True)
-    val_dataset = MyDataset(txt_path=val_list, transform=xception_default_data_transforms['val'],get_feature = True)
+    train_dataset = MyDataset(txt_path=train_list, transform=transforms_224['train'],get_feature = True) #get_feature = True, task2=True
+    val_dataset = MyDataset(txt_path=val_list, transform=transforms_224['val'],get_feature = True)
+
     if add_memory:
-        memory_dataset = MyDataset(txt_path=memory_list, transform=xception_default_data_transforms['train'],get_feature = True)
+        memory_dataset = MyDataset(txt_path=memory_list, transform=transforms_224['train'], memory_set=True) #get_feature = True
         train_dataset = train_dataset + memory_dataset
+
     train_loader = torch.utils.data.DataLoader(train_dataset,batch_size=batch_size, shuffle=True, drop_last=False, num_workers=8)
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=True, drop_last=False, num_workers=8)
     train_dataset_size = len(train_dataset)
     val_dataset_size = len(val_dataset)
 
-    print(train_dataset_size)
-    print(len(train_loader))
-    #exit()
+    # print(train_dataset_size)
+    # print(len(train_loader))
+    # exit()
 
-    model = model_selection(modelname='xception', num_out_classes=2, dropout=0.5)  # load studnet model
+    model = model_selection(modelname='resnet18', num_out_classes=2, dropout=0.5)  # load studnet model
+    feature_extractor = feature_model('resnet18', n_feat=512)
+    feature_extractor.to(device)
+
     if continue_train:
         print('continue train path:',model_path)
         print('train_list path:',train_list)
         print('val_list path:',val_list)
         model.load_state_dict(torch.load(model_path))
-    model = model.cuda()
+    model = model.to(device)
 
-    teacher_model = model_selection(modelname='xception', num_out_classes=2, dropout=0.5) # load teacher_model 
+    teacher_model = model_selection(modelname='resnet18', num_out_classes=2, dropout=0.5) # load teacher_model 
     model.load_state_dict(torch.load(teacher_model_path))
-    teacher_model = teacher_model.cuda()
+
+    teacher_model = teacher_model.to(device)
     teacher_model.eval()
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.0005, betas=(0.9, 0.999), eps=1e-08, weight_decay = 1e-6)
 
     scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
-    model = nn.DataParallel(model)
-    teacher_model = nn.DataParallel(teacher_model)
+    # model = nn.DataParallel(model)
+    # teacher_model = nn.DataParallel(teacher_model)
     best_model_wts = model.state_dict()
     best_acc = 0.0
     iteration = 0
+
+
+    features_before_avgpool = None
+
+    # def hook_fn(module, input, output):
+    #     global features_before_avgpool
+    #     features_before_avgpool = output
+    # hook = model.ResNet.register_forward_hook(hook_fn)
 
     for epoch in tqdm(range(epoches)):
         print('Epoch {}/{}'.format(epoch+1, epoches))
@@ -120,14 +139,25 @@ def main():
             iter_loss = 0.0
             iter_corrects = 0.0
 
-            image = image.cuda()
-            labels = labels.cuda()
+            image = image.to(device)
+            labels = labels.to(device)
             optimizer.zero_grad()
-            outputs,feature = model(image)
+            # outputs,feature = model(image)
+            outputs = model(image)
+            feature = feature_extractor(image)
+            # feature = features_before_avgpool
+            print(feature.shape)
+            # exit()
             _, preds = torch.max(outputs.data, 1)
             
-            teacher_outputs,teacher_featue = teacher_model(image)
-            loss_ce = criterion(outputs, labels)   # calculate CE-Loss
+            # teacher_outputs,teacher_featue = teacher_model(image)
+            teacher_outputs = teacher_model(image)
+            teacher_featue = feature_extractor(image)
+
+            loss_ce = criterion(outputs.to('cpu'), labels.to('cpu'))   # calculate CE-Loss
+
+            print(feature.shape, teacher_featue.shape)
+            # exit()
 
             loss_fd = 0.01 * loss_FD(feature,teacher_featue) # calculate FD_loss
             
@@ -156,8 +186,8 @@ def main():
         model.eval()
         with torch.no_grad():
             for (image, labels) in val_loader:
-                image = image.cuda()
-                labels = labels.cuda()
+                image = image.to(device)
+                labels = labels.to(device)
                 outputs,fc_feature = model(image)
                 _, preds = torch.max(outputs.data, 1)
                 loss = criterion(outputs, labels)
@@ -181,21 +211,23 @@ def main():
 if __name__ == '__main__':
     parse = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parse.add_argument('--name', '-n', type=str, default='20230425_Task2_DFDCP_with_FD')
+    parse.add_argument('--name', '-n', type=str, default='20250428_Task2_DFDCP_with_FD')
     
-    parse.add_argument('--train_list', '-tl' , type=str, default = '2500_real_and_2500_fake_train.txt')
+    parse.add_argument('--train_list', '-tl' , type=str, default = '2500_real_and_2500_fake_train_student.txt')
     
     parse.add_argument('--memory_list', '-ml' , type=str, default = '2020230424_Task2_DFDC_with_1consup_and_01_fd_Memory_DFDCP_img_info_Memory copy.txt')
    
-    parse.add_argument('--val_list', '-vl' , type=str, default = '2500_real_and_2500_fake_train.txt')
+    parse.add_argument('--val_list', '-vl' , type=str, default = '2500_real_and_2500_fake_train_student.txt')
    
     parse.add_argument('--batch_size', '-bz', type=int, default=64)
 
     parse.add_argument('--epoches', '-e', type=int, default='10')
 
+    parse.add_argument('--device', type=str, help='Get from nvidia-smi')
+
     parse.add_argument('--model_name', '-mn', type=str, default='demo.pkl')    
 
-    parse.add_argument('--continue_train', type=bool, default=True)
+    parse.add_argument('--continue_train', type=bool, default=False)
 
     parse.add_argument('--add_memory', type=bool, default=True)
     

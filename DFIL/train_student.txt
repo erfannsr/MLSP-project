@@ -1,0 +1,2 @@
+0,/home/erfan/MLSP project/Datasets/new_data/Real
+1,/home/erfan/MLSP project/Datasets/new_data/Fake

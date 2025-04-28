@@ -90,8 +90,8 @@ def main():
         if i == 0:
             continue
         a = torch.cat([a,feature[i]],dim = 0)
-    torch.save(a, "20250424_800_sampes.pt")
-    b = torch.load("20250424_800_sampes.pt")
+    torch.save(a, "20250424_train_data_800_sampes.pt")
+    b = torch.load("20250424_train_data_800_sampes.pt")
     print(b.shape)
 
 
@@ -109,4 +109,4 @@ if __name__ == '__main__':
     
     main()
 
-    print('Hello world!!!')
+    print('Get fetures run successful.')

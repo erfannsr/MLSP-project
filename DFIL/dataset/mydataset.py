@@ -10,17 +10,32 @@ import random
 import glob
 
 class MyDataset(Dataset):
-    def __init__(self, txt_path, transform=None, target_transform=None,aug = False, get_feature = False, add_memory = False):
+    def __init__(self, txt_path, transform=None, target_transform=None,aug = False, get_feature = False, add_memory = False, task2 = False, memory_set=False):
 
         imgs = []
 
+        
+        if memory_set: 
+            # Expects memory set inputs (.txt) in the form of: 
+            # 0,/home/erfan/MLSP project/Datasets/Deepfake and Real images-Kaggle/Train_small2/Real/real_28857.jpg
+            # ...
+            # 1,/home/erfan/MLSP project/Datasets/Deepfake and Real images-Kaggle/Train_small2/Fake/fake_30575.jpg
+            print('Loading memory set')
+            fh = open(txt_path, 'r')
+            for line in fh:
+                line = line.rstrip()
+                words = line.split(',')
+                # print(words[0], words[1])
+                imgs.append((words[1], int(words[0])))
+                # break
+            
         if get_feature :
             print("get_feature = True")
             fh = open(txt_path, 'r')
             for line in fh:
                 line = line.rstrip()
                 words = line.split(',')
-                #print(words[0],words[1])
+                # print(words[0],words[1])
                 # print(words)
                 # print (words[2].rjust(5,'0'))
                 # print(words)
@@ -30,8 +45,8 @@ class MyDataset(Dataset):
                 path = os.path.join(image_file,'*.jpg')
                 image_filenames = sorted(glob.glob(path))
                 # print(path)
-                #print(image_filenames)
-
+                # print(image_filenames)
+                # break
                 #imgs.append((words[1]+'/out'+words[2].rjust(5,'0')+'.png', int(words[0])))
                 for i in image_filenames:
                     imgs.append((i, int(words[0])))
@@ -66,30 +81,30 @@ class MyDataset(Dataset):
                 words = line.split(',')
                 imgs.append((words[1], int(words[0])))
     
-        else:
-            print("????")
-            fh = open(txt_path, 'r')
-            for line in fh:
-                line = line.rstrip()
-                words = line.split(',')
-                #print(words[0],words[1])
-                # print(words)
-                # print (words[2].rjust(5,'0'))
-                # print(words)
-                # break
+        # else:
+        #     print("????")
+        #     fh = open(txt_path, 'r')
+        #     for line in fh:
+        #         line = line.rstrip()
+        #         words = line.split(',')
+        #         #print(words[0],words[1])
+        #         # print(words)
+        #         # print (words[2].rjust(5,'0'))
+        #         # print(words)
+        #         # break
 
-                image_file = words[1]
-                path = os.path.join(image_file,'*.jpg')
-                image_filenames = sorted(glob.glob(path))
-                print(path)
+        #         image_file = words[1]
+        #         path = os.path.join(image_file,'*.jpg')
+        #         image_filenames = sorted(glob.glob(path))
+        #         print(path)
                 
                 # print(image_filenames)
                 # exit()
 
                 #imgs.append((words[1]+'/out'+words[2].rjust(5,'0')+'.png', int(words[0])))
-                for i in image_filenames:
-                    imgs.append((i, int(words[0])))
-                print(imgs[0], imgs[1])
+                # for i in image_filenames:
+                #     imgs.append((i, int(words[0])))
+                # print(imgs[0], imgs[1])
 
         print("the number of images: ",len(imgs))
         self.imgs = imgs

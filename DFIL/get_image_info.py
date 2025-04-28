@@ -7,7 +7,7 @@ from torch.optim import lr_scheduler
 import argparse
 import os
 import cv2
-from network.models import model_selection
+from network.models import model_selection, feature_model
 from dataset.transform import xception_default_data_transforms, transforms_224
 from dataset.mydataset import MyDataset
 import pandas as pd
@@ -39,11 +39,13 @@ def main():
     if isinstance(model, torch.nn.DataParallel):
         print("is instance")
         model = model.module
+    feature_extractor = feature_model('resnet18', n_feat=512)
+    feature_extractor.to(device)
     model = model.to(device)
     model.eval()
 
     print(model)
-    summary(model,(3, 299, 299),batch_size=1,device="cuda")
+    summary(model,(3, 224,224),batch_size=1,device="cuda")
 
 
     file_image_dir = test_list
@@ -73,10 +75,18 @@ def main():
     for line in fh:   # True
         line = line.rstrip()
         words = line.split(',')
-        res.append(words[1])
-        image_label.append(int(words[0]))
+        # print(words[1])
+        for file_name in os.listdir(words[1]):
+            # print(file_name)
+            res.append(os.path.join(words[1], file_name)) #save image full path to res list
+            image_label.append(int(words[0]))
+            # break
+        # res.append(words[1])
+        # image_label.append(int(words[0]))
     print(len(image_label))
     print(len(res))
+    # print(image_label)
+    # print(res)
     # exit()
 
     feature_mean_0 = None
@@ -89,9 +99,10 @@ def main():
             labels = labels.to(device)
             outputs = model(image) #,fc_features
 
-            fc_features = model.model.features(image)
-            fc_features = F.adaptive_avg_pool2d(fc_features, (1, 1)) 
-            fc_features = fc_features.view(fc_features.size(0), -1)
+            # fc_features = model.model.features(image)
+            # fc_features = F.adaptive_avg_pool2d(fc_features, (1, 1)) 
+            # fc_features = fc_features.view(fc_features.size(0), -1)
+            fc_features = feature_extractor(image)
             for i in range(len(labels)):
                 if labels[i] == 0:
                     num_0 += 1
@@ -132,12 +143,14 @@ def main():
             labels = labels.to(device)
             # outputs,fc_features = model(image)
             outputs = model(image) #,fc_features
-            fc_features = model.model.features(image)
-            fc_features = F.adaptive_avg_pool2d(fc_features, (1, 1)) 
-            fc_features = fc_features.view(fc_features.size(0), -1)
+            # fc_features = model.model.features(image)
+            # fc_features = F.adaptive_avg_pool2d(fc_features, (1, 1)) 
+            # fc_features = fc_features.view(fc_features.size(0), -1)
+            fc_features = feature_extractor(image)
             _, preds = torch.max(outputs.data, 1)
             prob = nn.functional.softmax(outputs.data,dim=1)
-            # calculate the difficult of sample 
+            
+            ################# calculate the difficult of sample ################# 
             for i in range(len(image)):
                 bug += 1
                 print(bug)
@@ -165,7 +178,7 @@ def main():
                     distance = F.pairwise_distance(feature_mean_0, now_features, p=2)
                 else :
                     distance = F.pairwise_distance(feature_mean_1, now_features, p=2)
-                dis.append(distance)
+                dis.append(distance.cpu())
                 
             corrects += torch.sum(preds == labels.data).to(torch.float32)
             print('Iteration Acc {:.4f}'.format(torch.sum(preds == labels.data).to(torch.float32)/batch_size))
@@ -190,7 +203,7 @@ def main():
     df = pd.DataFrame(dict)
  
     #保存 dataframe
-    df.to_csv('20230510_Task3_DFD_by_all(T=10)_img_info.csv')
+    df.to_csv('20250424_Task3_DFD_by_all(T=10)_img_info.csv')
 
 
 
@@ -206,4 +219,4 @@ if __name__ == '__main__':
     
     main()
 
-    print('Hello world!!!')
+    print('Get_image_info run successful.')
