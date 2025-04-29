@@ -18,8 +18,11 @@ from torch.nn import functional as F
 from SupConLoss import SupConLoss
 
 
+# def loss_fn_kd(y, labels, teacher_scores, T, alpha):
+#     return nn.KLDivLoss()(F.log_softmax(y/T,dim=1), F.log_softmax(teacher_scores/T,dim=1)) * (T*T * 2.0 * alpha) + F.cross_entropy(y, labels) * (1. - alpha)
+
 def loss_fn_kd(y, labels, teacher_scores, T, alpha):
-    return nn.KLDivLoss()(F.log_softmax(y/T,dim=1), F.log_softmax(teacher_scores/T,dim=1)) * (T*T * 2.0 * alpha) + F.cross_entropy(y, labels) * (1. - alpha)
+    return nn.KLDivLoss(reduction='batchmean')(F.log_softmax(y/T,dim=1), F.softmax(teacher_scores/T,dim=1)) * (T*T * 2.0 * alpha) + F.cross_entropy(y, labels) * (1. - alpha)
 
 def loss_fn_kd_2(outputs, labels, teacher_outputs, KD_T=20, KD_alpha=0.5):
     KD_loss = nn.KLDivLoss(reduction='batchmean')(F.log_softmax(outputs/KD_T,dim=1),
@@ -29,10 +32,12 @@ def loss_fn_kd_2(outputs, labels, teacher_outputs, KD_T=20, KD_alpha=0.5):
 
 def loss_FD(Student_feature, Teacher_feature):
     Student_feature = F.adaptive_avg_pool2d(Student_feature, (1, 1)) 
+    # Student_feature = F.adaptive_avg_pool1d(Student_feature, output_size = 1) 
     Student_feature = Student_feature.view(Student_feature.size(0), -1)
     Student_feature = F.normalize(Student_feature, dim=1)
 
-    Teacher_feature = F.adaptive_avg_pool2d(Teacher_feature, (1, 1)) 
+    Teacher_feature = F.adaptive_avg_pool2d(Teacher_feature, (1, 1))    
+    # Teacher_feature = F.adaptive_avg_pool1d(Teacher_feature, output_size = 1)
     Teacher_feature = Teacher_feature.view(Teacher_feature.size(0), -1)
     Teacher_feature = F.normalize(Teacher_feature, dim=1)
 
@@ -45,10 +50,12 @@ def loss_FD(Student_feature, Teacher_feature):
 def loss_ConSup(fc_features,labels):
     criterion_supcon = SupConLoss()
     fc_features = F.adaptive_avg_pool2d(fc_features, (1, 1)) 
+    # fc_features = F.adaptive_avg_pool1d(fc_features, 1)
     fc_features = fc_features.view(fc_features.size(0), -1)
     loss = criterion_supcon(fc_features,labels)
 
     return loss
+
 def main():
     args = parse.parse_args()
     add_memory = args.add_memory
@@ -89,25 +96,37 @@ def main():
     # print(len(train_loader))
     # exit()
 
+    # LOAD TEACHER MODEL
+    teacher_model = model_selection(modelname='resnet18', num_out_classes=2, dropout=0.5) # load teacher_model 
+    teacher_model.load_state_dict(torch.load(teacher_model_path)) # Load teacher model weights
+    teacher_model = teacher_model.to(device)
+    teacher_model.eval()
+
+
+    # LOAD STUDENT MODEL (model)
     model = model_selection(modelname='resnet18', num_out_classes=2, dropout=0.5)  # load studnet model
-    feature_extractor = feature_model('resnet18', n_feat=512)
-    feature_extractor.to(device)
+    # feature_extractor = feature_model('resnet18', n_feat=512)
+    # feature_extractor.to(device)
 
     if continue_train:
         print('continue train path:',model_path)
         print('train_list path:',train_list)
         print('val_list path:',val_list)
         model.load_state_dict(torch.load(model_path))
+    
+    model.set_trainable_layers(6) # to train late blocks model.feature_extractor[6:]
     model = model.to(device)
+    
 
-    teacher_model = model_selection(modelname='resnet18', num_out_classes=2, dropout=0.5) # load teacher_model 
-    model.load_state_dict(torch.load(teacher_model_path))
+    
 
-    teacher_model = teacher_model.to(device)
-    teacher_model.eval()
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.0005, betas=(0.9, 0.999), eps=1e-08, weight_decay = 1e-6)
+    # optimizer = optim.Adam(model.parameters(), lr=0.0005, betas=(0.9, 0.999), eps=1e-08, weight_decay = 1e-6)
+    optimizer = torch.optim.Adam(   
+        filter(lambda p: p.requires_grad, model.parameters()), 
+        lr=0.0005, betas=(0.9, 0.999), eps=1e-08, weight_decay = 1e-6
+    )
 
     scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
     # model = nn.DataParallel(model)
@@ -116,13 +135,6 @@ def main():
     best_acc = 0.0
     iteration = 0
 
-
-    features_before_avgpool = None
-
-    # def hook_fn(module, input, output):
-    #     global features_before_avgpool
-    #     features_before_avgpool = output
-    # hook = model.ResNet.register_forward_hook(hook_fn)
 
     for epoch in tqdm(range(epoches)):
         print('Epoch {}/{}'.format(epoch+1, epoches))
@@ -143,29 +155,31 @@ def main():
             labels = labels.to(device)
             optimizer.zero_grad()
             # outputs,feature = model(image)
-            outputs = model(image)
-            feature = feature_extractor(image)
+            outputs, feature = model(image)
+            # feature = feature_extractor(image)
             # feature = features_before_avgpool
-            print(feature.shape)
+            # feature = feature.view(8, feature.shape[1]//2, -1) #(batch_size, feature.shape[1]//2, feature.shape[1]//2)
+            # print(feature.shape)
             # exit()
             _, preds = torch.max(outputs.data, 1)
             
             # teacher_outputs,teacher_featue = teacher_model(image)
-            teacher_outputs = teacher_model(image)
-            teacher_featue = feature_extractor(image)
+            teacher_outputs, teacher_feature = teacher_model(image)
+            # teacher_featue = feature_extractor(image)
 
             loss_ce = criterion(outputs.to('cpu'), labels.to('cpu'))   # calculate CE-Loss
 
-            print(feature.shape, teacher_featue.shape)
+            # print(feature.shape, teacher_featue.shape)
             # exit()
 
-            loss_fd = 0.01 * loss_FD(feature,teacher_featue) # calculate FD_loss
+            loss_fd = 0.01 * loss_FD(feature,teacher_feature) # calculate FD_loss
             
             loss_kd = loss_fn_kd(outputs, labels, teacher_outputs, T=20.0, alpha=0.3)  # calculate KD_Loss
             
             # loss_consup = loss_ConSup(feature,labels)   # calculate Consup_loss
             loss_consup = 0.1 * loss_ConSup(feature,labels)   # calculate Consup_loss
-            print(loss_ce.item() ,loss_fd.item() ,loss_kd.item(),loss_consup.item())
+            # print("losses:", loss_ce.item() ,loss_fd.item() ,loss_kd.item(),loss_consup.item())
+            # exit()
 
             loss = loss_ce + loss_fd + loss_kd + loss_consup 
             # loss = loss_ce  + loss_kd + loss_consup 
@@ -177,8 +191,10 @@ def main():
             train_loss += iter_loss
             train_corrects += iter_corrects
             iteration += 1
-            if not (iteration % 20):
+            if not (iteration % 100):
                 print('iteration {} train loss: {:.8f} Acc: {:.8f}'.format(iteration, iter_loss / batch_size, iter_corrects / batch_size))
+                # print("losses:", loss_ce.item() ,loss_fd.item() ,loss_kd.item(),loss_consup.item())
+
         epoch_loss = train_loss / train_dataset_size
         epoch_acc = train_corrects / train_dataset_size
         print('epoch train loss: {:.8f} Acc: {:.8f}'.format(epoch_loss, epoch_acc))
@@ -188,7 +204,9 @@ def main():
             for (image, labels) in val_loader:
                 image = image.to(device)
                 labels = labels.to(device)
-                outputs,fc_feature = model(image)
+                # outputs,fc_feature = model(image)
+                outputs, feature = model(image)
+                # feature = feature_extractor(image)
                 _, preds = torch.max(outputs.data, 1)
                 loss = criterion(outputs, labels)
                 val_loss += loss.data.item()
@@ -201,10 +219,12 @@ def main():
                 best_model_wts = model.state_dict()
         scheduler.step()
         #if not (epoch % 40):
-        torch.save(model.module.state_dict(), os.path.join(output_path, str(epoch) + '_' + model_name))
+        # torch.save(model.module.state_dict(), os.path.join(output_path, str(epoch) + '_' + model_name))
+        #experimenting
+        torch.save(model.state_dict(), os.path.join(output_path, str(epoch) + '_' + model_name))
     print('Best val Acc: {:.4f}'.format(best_acc))
     model.load_state_dict(best_model_wts)
-    torch.save(model.module.state_dict(), os.path.join(output_path, "best.pkl"))
+    torch.save(model.state_dict(), os.path.join(output_path, "best.pkl"))
     
 
 
@@ -231,9 +251,9 @@ if __name__ == '__main__':
 
     parse.add_argument('--add_memory', type=bool, default=True)
     
-    parse.add_argument('--model_path', '-mp', type=str, default='20230424_Task2_DFDC_with_1consup_and_01_fd/best.pkl')
+    parse.add_argument('--model_path', '-mp', type=str, help="Pass only if continue_train=TRUE") #"20230424_Task2_DFDC_with_1consup_and_01_fd/best.pkl"
     
-    parse.add_argument('--teacher_model_path', '-tmp', type=str, default='20230424_Task2_DFDC_with_1consup_and_01_fd/best.pkl')
+    parse.add_argument('--teacher_model_path', '-tmp', type=str, default='/output/29042025_10epochs_SupConLoss/best.pkl')
     
     main()
 

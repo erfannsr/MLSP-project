@@ -52,8 +52,10 @@ def main():
     # exit()
 
     model = model_selection(modelname='resnet18', num_out_classes=2, dropout=0.5)
-    feature_extractor = feature_model('resnet18', n_feat=512)
-    feature_extractor.to(device)
+    model.set_trainable_layers(6) # to train late blocks model.feature_extractor[6:]
+    
+    # feature_extractor = feature_model('resnet18', n_feat=512)
+    # feature_extractor.to(device)
 
     if continue_train:
         print('continue train path:',model_path)
@@ -61,23 +63,30 @@ def main():
         print('val_list path:',val_list)
         model.load_state_dict(torch.load(model_path))
         print("Loading successful")
+        best_model_wts = model.state_dict()
         # exit()
 
     model = model.to(device)
     # print(next(model.parameters()).is_cuda)
     # exit()
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.0005, betas=(0.9, 0.999), eps=1e-08, weight_decay = 1e-6)
+    # optimizer = optim.Adam(model.parameters(), lr=0.0005, betas=(0.9, 0.999), eps=1e-08, weight_decay = 1e-6)
+    optimizer = torch.optim.Adam(
+        filter(lambda p: p.requires_grad, model.parameters()), 
+        lr=0.0005, betas=(0.9, 0.999), eps=1e-08, weight_decay = 1e-6
+    )
     scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
 
     criterion_supcon = SupConLoss()
 
-    model = nn.DataParallel(model)
+    # model = nn.DataParallel(model)
 
-    # print(model)
-    # summary(model,(3, 299, 299),batch_size=1,device="cuda")
+    # print(model.feature_extractor[6:])
 
-    best_model_wts = model.state_dict()
+    # # summary(model,(3, 299, 299),batch_size=1,device="cuda")
+    # exit()
+
+    
     best_acc = 0.0
     iteration = 0
     for epoch in tqdm(range(epoches)):
@@ -100,10 +109,16 @@ def main():
             optimizer.zero_grad()
             # outputs,fc_features = model(image)
             # print(image.size())
-            outputs = model(image)
+            outputs, features = model(image)
             _, preds = torch.max(outputs.data, 1)
             
 
+            # AVG POOL and FLATTEN
+            features = model.feature_extractor[8](features) # AVG POOL
+            features = torch.flatten(features, 1)  # flatten to (batch_size, feature_dim)
+
+            # print(features.shape)
+            # exit()
             # print(f'size of data loader: {len(labels)}')
             # print(f'outputs.shape = {outputs.shape}')
             # print(outputs.data)
@@ -115,7 +130,7 @@ def main():
             # exit()
 
             ### CUSTOM FETURE EXTRACTOR
-            fc_features = feature_extractor(image)
+            # fc_features = feature_extractor(image)
             # print(fc_features, fc_features.shape)
             # exit()
 
@@ -141,7 +156,7 @@ def main():
 
             loss1 = criterion(outputs, labels)
 
-            loss2 = criterion_supcon(fc_features,labels)
+            loss2 = criterion_supcon(features,labels)
             
             loss = loss1 + loss2
             # print(fc_features.shape)
@@ -157,7 +172,7 @@ def main():
             iter_corrects = torch.sum(preds == labels.data).to(torch.float32)
             train_corrects += iter_corrects
             iteration += 1
-            if not (iteration % 50):
+            if not (iteration % 100):
                 print('iteration {} train loss: {:.8f} Acc: {:.8f}'.format(iteration, iter_loss / batch_size, iter_corrects / batch_size))
         epoch_loss = train_loss / train_dataset_size
         epoch_acc = train_corrects / train_dataset_size
@@ -169,7 +184,7 @@ def main():
                 image = image.to(device)
                 labels = labels.to(device)
 
-                outputs = model(image) #,features
+                outputs, features = model(image) #,features
                 _, preds = torch.max(outputs.data, 1)
                 loss = criterion(outputs, labels)
                 val_loss += loss.data.item()
@@ -182,10 +197,10 @@ def main():
                 best_model_wts = model.state_dict()
         scheduler.step()
         #if not (epoch % 40):
-        torch.save(model.module.state_dict(), os.path.join(output_path, str(epoch) + '_' + model_name))
+        torch.save(model.state_dict(), os.path.join(output_path, str(epoch) + '_' + model_name))
     print('Best val Acc: {:.4f}'.format(best_acc))
     model.load_state_dict(best_model_wts)
-    torch.save(model.module.state_dict(), os.path.join(output_path, "best.pkl"))
+    torch.save(model.state_dict(), os.path.join(output_path, "best.pkl"))
 
 
 

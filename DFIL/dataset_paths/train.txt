@@ -1,0 +1,2 @@
+0,/home/erfan/MLSP project/Datasets/Deepfake and Real images-Kaggle/Train_small2/Real
+1,/home/erfan/MLSP project/Datasets/Deepfake and Real images-Kaggle/Train_small2/Fake

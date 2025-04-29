@@ -36,16 +36,16 @@ def main():
     #model = torchvision.models.densenet121(num_classes=2)
     model = model_selection(modelname='resnet18', num_out_classes=2, dropout=0.5)
     model.load_state_dict(torch.load(model_path))
-    if isinstance(model, torch.nn.DataParallel):
-        print("is instance")
-        model = model.module
-    feature_extractor = feature_model('resnet18', n_feat=512)
-    feature_extractor.to(device)
+    # if isinstance(model, torch.nn.DataParallel):
+    #     print("is instance")
+    #     model = model.module
+    # feature_extractor = feature_model('resnet18', n_feat=512)
+    # feature_extractor.to(device)
     model = model.to(device)
     model.eval()
 
-    print(model)
-    summary(model,(3, 224,224),batch_size=1,device="cuda")
+    # print(model)
+    # summary(model,(3, 224,224),batch_size=1,device="cuda")
 
 
     file_image_dir = test_list
@@ -83,8 +83,8 @@ def main():
             # break
         # res.append(words[1])
         # image_label.append(int(words[0]))
-    print(len(image_label))
-    print(len(res))
+    # print(len(image_label))
+    # print(len(res))
     # print(image_label)
     # print(res)
     # exit()
@@ -97,17 +97,23 @@ def main():
         for (image, labels) in test_loader:
             image = image.to(device)
             labels = labels.to(device)
-            outputs = model(image) #,fc_features
+            outputs, features = model(image) #,fc_features
+
+            # AVG POOL and FLATTEN
+            features = model.feature_extractor[8](features) # AVG POOL
+            fc_features = torch.flatten(features, 1)  # flatten to (batch_size, feature_dim)
 
             # fc_features = model.model.features(image)
             # fc_features = F.adaptive_avg_pool2d(fc_features, (1, 1)) 
             # fc_features = fc_features.view(fc_features.size(0), -1)
-            fc_features = feature_extractor(image)
+            # fc_features = feature_extractor(image)
             for i in range(len(labels)):
                 if labels[i] == 0:
                     num_0 += 1
                     if feature_mean_0 == None:
                         feature_mean_0 = fc_features[i]
+                        # print(fc_features, fc_features.shape)
+                        # exit()
                     else:
                         feature_mean_0 = feature_mean_0 + fc_features[i]
 
@@ -142,11 +148,17 @@ def main():
             image = image.to(device)
             labels = labels.to(device)
             # outputs,fc_features = model(image)
-            outputs = model(image) #,fc_features
+            # outputs = model(image) #,fc_features
             # fc_features = model.model.features(image)
             # fc_features = F.adaptive_avg_pool2d(fc_features, (1, 1)) 
             # fc_features = fc_features.view(fc_features.size(0), -1)
-            fc_features = feature_extractor(image)
+            # fc_features = feature_extractor(image)
+
+            outputs, features = model(image) #,fc_features
+            # AVG POOL and FLATTEN
+            features = model.feature_extractor[8](features) # AVG POOL
+            fc_features = torch.flatten(features, 1)  # flatten to (batch_size, feature_dim)
+
             _, preds = torch.max(outputs.data, 1)
             prob = nn.functional.softmax(outputs.data,dim=1)
             
@@ -202,8 +214,8 @@ def main():
             }
     df = pd.DataFrame(dict)
  
-    #保存 dataframe
-    df.to_csv('20250424_Task3_DFD_by_all(T=10)_img_info.csv')
+    #Create dataframe
+    df.to_csv('29042025_Task3_DFD_by_all_img_info.csv')
 
 
 

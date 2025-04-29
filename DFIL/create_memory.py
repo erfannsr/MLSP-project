@@ -4,7 +4,7 @@ import numpy as np
 
 if __name__ == '__main__':
     csv_path = ''
-    df = pd.read_csv("20250424_Task3_DFD_by_all(T=10)_img_info.csv")
+    df = pd.read_csv("29042025_Task3_DFD_by_all_img_info.csv")
 
 #------------------------------------------------------------------------------------------------ All Center
 
@@ -69,24 +69,24 @@ if __name__ == '__main__':
     # df.to_csv('20230419_DFD_random_select-samples.txt',sep=' ',index=0,header=0)
     # exit()
 
-#------------------------------------------------------------------------------------------------ 250 hard + 250 center
 
+#------------------------------------------------------------------------------------------------ 500 hard + 500 center
 
     df1 = df[df['image_label']==1]
     df0 = df[df['image_label']==0]
     df1 = df1.sort_values('image_entropy',ascending=False)[['image_label','image_info']]
-    df1[:250].to_csv('20250424_DFD_1(250)_(T=10)_sorted_by_entropy.txt',sep=' ',index=0,header=0)
+    df1[:250].to_csv('Memory_Set_New/29042025_DFD_1(250)_sorted_by_entropy.txt',sep=',',index=0,header=0)
     
     df0 = df0.sort_values('image_entropy',ascending=False)[['image_label','image_info']]
-    df0[:250].to_csv('20250424_DFD_0(250)_(T=10)_sorted_by_entropy.txt',sep=' ',index=0,header=0)
+    df0[:250].to_csv('Memory_Set_New/29042025_DFD_0(250)_sorted_by_entropy.txt',sep=',',index=0,header=0)
     
     df1 = df[df['image_label']==1]
     df0 = df[df['image_label']==0]
     df1 = df1.sort_values('dis2mean',ascending=True)[['image_label','image_info']]
-    df1[:250].to_csv('20250424_DFD_1(250)_(T=10)_sorted_by_dis2mean.txt',sep=' ',index=0,header=0)
+    df1[:250].to_csv('Memory_Set_New/29042025_DFD_1(250)_sorted_by_dis2mean.txt',sep=',',index=0,header=0)
     
     df0 = df0.sort_values('dis2mean',ascending=True)[['image_label','image_info']]
-    df0[:250].to_csv('20250424_DFD_0(250)_(T=10)_sorted_by_dis2mean.txt',sep=' ',index=0,header=0)
+    df0[:250].to_csv('Memory_Set_New/29042025_DFD_0(250)_sorted_by_dis2mean.txt',sep=',',index=0,header=0)
     
     print("Memory set Created successfully.")
 

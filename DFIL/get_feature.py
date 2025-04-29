@@ -33,9 +33,9 @@ def main():
     # model = model_selection(modelname='SupCON', num_out_classes=2, dropout=0.5)
     model = model_selection(modelname='resnet18', num_out_classes=2, dropout=0.5)
     model.load_state_dict(torch.load(model_path))
-    if isinstance(model, torch.nn.DataParallel):
-        print("is instance")
-        model = model.module
+    # if isinstance(model, torch.nn.DataParallel):
+    #     print("is instance")
+    #     model = model.module
     
     # print("model:")
     # print(dir(model.model))
@@ -44,14 +44,15 @@ def main():
     
 
     sum = 0
-    model.model.last_linear = nn.Sequential(
-        nn.Dropout(p=0.5, inplace=False),
-        nn.Linear(in_features=2048, out_features=2, bias=True),
-    )
+    # model.last_linear = nn.Sequential(
+    #     nn.Dropout(p=0.5, inplace=False),
+    #     nn.Linear(in_features=2048, out_features=2, bias=True),
+    # )
     model = model.to(device)
     model.eval()
 
     # print(model)
+    # exit()
     # summary(model,(3, 299, 299),batch_size=1,device="cuda")
     iteration = 0
     feature = []
@@ -60,14 +61,14 @@ def main():
             image = image.to(device)
             # print(image.size())
             labels = labels.to(device)
-            outputs = model(image) #,_
+            outputs, _ = model(image) #,_
             # print(outputs.shape) 
             feature.append(outputs)
             #exit()
             _, preds = torch.max(outputs.data, 1)
-            print(f'size of data loader: {len(labels)}')
-            print(f'outputs.shape = {outputs.shape}')
-            print(outputs.data)
+            # print(f'size of data loader: {len(labels)}')
+            # print(f'outputs.shape = {outputs.shape}')
+            # print(outputs.data)
             # print(preds)
             # print(labels)
             # exit()
@@ -77,10 +78,10 @@ def main():
 
             corrects += torch.sum(preds == labels.data).to(torch.float32)
             iteration += 1
-            if not (iteration % 50):
+            if not (iteration % 100):
                 print('Iteration Acc {:.4f}'.format(torch.sum(preds == labels.data).to(torch.float32)/batch_size))
-                print(preds)
-                print(labels)
+                # print(preds)
+                # print(labels)
             # exit()
         acc = corrects / test_dataset_size
         print('Test Acc: {:.4f}'.format(acc))
@@ -90,8 +91,10 @@ def main():
         if i == 0:
             continue
         a = torch.cat([a,feature[i]],dim = 0)
-    torch.save(a, "20250424_train_data_800_sampes.pt")
-    b = torch.load("20250424_train_data_800_sampes.pt")
+    # torch.save(a, "20250424_train_data_800_sampes.pt")
+    # b = torch.load("20250424_train_data_800_sampes.pt")
+    torch.save(a, "29042025_getFeatureOutput.pt")
+    b = torch.load("29042025_getFeatureOutput.pt")
     print(b.shape)
 
 

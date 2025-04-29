@@ -1,0 +1,2 @@
+0,/home/erfan/MLSP project/Datasets/CDDB_GAN_faces/val/real
+1,/home/erfan/MLSP project/Datasets/CDDB_GAN_faces/val/fake
