@@ -1,0 +1,161 @@
+nohup: ignoring input
+/home/erfan/miniconda3/lib/python3.12/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/home/erfan/miniconda3/lib/python3.12/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=ResNet18_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet18_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+get_feature = True
+the number of images:  1400
+get_feature = True
+the number of images:  200
+Loading memory set
+????
+the number of images:  1300
+  0%|          | 0/20 [00:00<?, ?it/s]Epoch 1/20
+----------
+iteration 100 train loss: 1.65783572 Acc: 0.62500000
+iteration 200 train loss: 1.09113038 Acc: 0.87500000
+iteration 300 train loss: 1.49959838 Acc: 0.50000000
+epoch train loss: 1.39211516 Acc: 0.66148150
+  5%|▌         | 1/20 [00:10<03:12, 10.11s/it]epoch val loss: 0.08231713 Acc: 0.61000001
+Epoch 2/20
+----------
+iteration 400 train loss: 0.54884350 Acc: 0.75000000
+iteration 500 train loss: 0.94209677 Acc: 0.50000000
+iteration 600 train loss: 1.67758203 Acc: 1.00000000
+epoch train loss: 0.95895974 Acc: 0.72111112
+ 10%|█         | 2/20 [00:19<02:58,  9.93s/it]epoch val loss: 0.19672450 Acc: 0.54500002
+Epoch 3/20
+----------
+iteration 700 train loss: 0.78428292 Acc: 0.87500000
+iteration 800 train loss: 0.63290161 Acc: 0.75000000
+iteration 900 train loss: 0.57397383 Acc: 0.87500000
+iteration 1000 train loss: 0.23197910 Acc: 0.87500000
+epoch train loss: 0.77438237 Acc: 0.74555558
+ 15%|█▌        | 3/20 [00:29<02:48,  9.90s/it]epoch val loss: 0.20397230 Acc: 0.58999997
+Epoch 4/20
+----------
+iteration 1100 train loss: 0.34960675 Acc: 0.87500000
+iteration 1200 train loss: 1.25948238 Acc: 0.50000000
+iteration 1300 train loss: 0.67209613 Acc: 0.62500000
+epoch train loss: 0.74688068 Acc: 0.73777777
+ 20%|██        | 4/20 [00:39<02:38,  9.91s/it]epoch val loss: 0.17912085 Acc: 0.56999999
+Epoch 5/20
+----------
+iteration 1400 train loss: 1.39912248 Acc: 0.37500000
+iteration 1500 train loss: 0.86266810 Acc: 0.75000000
+iteration 1600 train loss: 0.49974644 Acc: 0.87500000
+epoch train loss: 0.66678624 Acc: 0.73703706
+ 25%|██▌       | 5/20 [00:49<02:29,  9.95s/it]epoch val loss: 0.16634393 Acc: 0.59999996
+Epoch 6/20
+----------
+iteration 1700 train loss: 0.55779988 Acc: 0.50000000
+iteration 1800 train loss: 0.54416007 Acc: 0.75000000
+iteration 1900 train loss: 0.21586972 Acc: 1.00000000
+iteration 2000 train loss: 1.18814552 Acc: 0.50000000
+epoch train loss: 0.53176266 Acc: 0.76851851
+ 30%|███       | 6/20 [00:59<02:19,  9.97s/it]epoch val loss: 0.15396239 Acc: 0.63000000
+Epoch 7/20
+----------
+iteration 2100 train loss: 0.50608176 Acc: 0.87500000
+iteration 2200 train loss: 0.32761714 Acc: 0.75000000
+iteration 2300 train loss: 0.10415294 Acc: 0.87500000
+epoch train loss: 0.49077196 Acc: 0.77444446
+ 35%|███▌      | 7/20 [01:09<02:10, 10.00s/it]epoch val loss: 0.15680863 Acc: 0.63499999
+Epoch 8/20
+----------
+iteration 2400 train loss: 0.31541398 Acc: 0.87500000
+iteration 2500 train loss: 0.64147109 Acc: 0.75000000
+iteration 2600 train loss: 0.23617376 Acc: 0.75000000
+iteration 2700 train loss: 0.53283787 Acc: 0.75000000
+epoch train loss: 0.46856525 Acc: 0.78629631
+ 40%|████      | 8/20 [01:20<02:00, 10.07s/it]epoch val loss: 0.11890955 Acc: 0.66499996
+Epoch 9/20
+----------
+iteration 2800 train loss: 0.55985725 Acc: 0.75000000
+iteration 2900 train loss: 0.19490957 Acc: 0.87500000
+iteration 3000 train loss: 0.59930599 Acc: 0.87500000
+epoch train loss: 0.46616941 Acc: 0.78037035
+ 45%|████▌     | 9/20 [01:30<01:51, 10.10s/it]epoch val loss: 0.18988578 Acc: 0.60499996
+Epoch 10/20
+----------
+iteration 3100 train loss: 0.15448716 Acc: 1.00000000
+iteration 3200 train loss: 0.38758132 Acc: 0.87500000
+iteration 3300 train loss: 0.45612198 Acc: 0.62500000
+epoch train loss: 0.45779579 Acc: 0.78370368
+ 50%|█████     | 10/20 [01:40<01:42, 10.30s/it]epoch val loss: 0.15905016 Acc: 0.62000000
+Epoch 11/20
+----------
+iteration 3400 train loss: 0.20403200 Acc: 0.87500000
+iteration 3500 train loss: 1.29365218 Acc: 0.37500000
+iteration 3600 train loss: 0.26069778 Acc: 0.87500000
+iteration 3700 train loss: 0.34914756 Acc: 0.87500000
+epoch train loss: 0.44228679 Acc: 0.79074073
+ 55%|█████▌    | 11/20 [01:51<01:33, 10.41s/it]epoch val loss: 0.15831882 Acc: 0.61000001
+Epoch 12/20
+----------
+iteration 3800 train loss: 0.29273200 Acc: 0.87500000
+iteration 3900 train loss: 0.56000447 Acc: 0.75000000
+iteration 4000 train loss: 0.49000251 Acc: 0.75000000
+epoch train loss: 0.42428059 Acc: 0.79074073
+ 60%|██████    | 12/20 [02:02<01:23, 10.45s/it]epoch val loss: 0.15492159 Acc: 0.60499996
+Epoch 13/20
+----------
+iteration 4100 train loss: 0.44082856 Acc: 0.62500000
+iteration 4200 train loss: 0.52809674 Acc: 0.87500000
+iteration 4300 train loss: 0.26859668 Acc: 0.75000000
+epoch train loss: 0.43244756 Acc: 0.79074073
+ 65%|██████▌   | 13/20 [02:13<01:14, 10.58s/it]epoch val loss: 0.15661305 Acc: 0.58999997
+Epoch 14/20
+----------
+iteration 4400 train loss: 0.98974216 Acc: 0.37500000
+iteration 4500 train loss: 0.72672951 Acc: 0.62500000
+iteration 4600 train loss: 0.40976989 Acc: 0.75000000
+iteration 4700 train loss: 0.43874574 Acc: 0.75000000
+epoch train loss: 0.42797279 Acc: 0.79407406
+ 70%|███████   | 14/20 [02:23<01:03, 10.55s/it]epoch val loss: 0.19107559 Acc: 0.58499998
+Epoch 15/20
+----------
+iteration 4800 train loss: 0.82461596 Acc: 0.75000000
+iteration 4900 train loss: 0.34920186 Acc: 0.75000000
+iteration 5000 train loss: 0.27715984 Acc: 0.75000000
+epoch train loss: 0.42579233 Acc: 0.79185188
+ 75%|███████▌  | 15/20 [02:33<00:52, 10.51s/it]epoch val loss: 0.17479767 Acc: 0.59499997
+Epoch 16/20
+----------
+iteration 5100 train loss: 0.39706284 Acc: 0.87500000
+iteration 5200 train loss: 0.50866318 Acc: 0.87500000
+iteration 5300 train loss: 0.61156297 Acc: 0.87500000
+iteration 5400 train loss: 0.58527797 Acc: 0.50000000
+epoch train loss: 0.41954942 Acc: 0.79333335
+ 80%|████████  | 16/20 [02:44<00:41, 10.49s/it]epoch val loss: 0.17418840 Acc: 0.59999996
+Epoch 17/20
+----------
+iteration 5500 train loss: 0.63964951 Acc: 0.62500000
+iteration 5600 train loss: 1.38022876 Acc: 0.37500000
+iteration 5700 train loss: 0.30375904 Acc: 0.87500000
+epoch train loss: 0.41655607 Acc: 0.79444444
+ 85%|████████▌ | 17/20 [02:54<00:31, 10.47s/it]epoch val loss: 0.17506780 Acc: 0.59499997
+Epoch 18/20
+----------
+iteration 5800 train loss: 0.19102347 Acc: 0.87500000
+iteration 5900 train loss: 0.30022204 Acc: 1.00000000
+iteration 6000 train loss: 0.50251824 Acc: 0.75000000
+epoch train loss: 0.41268519 Acc: 0.79555553
+ 90%|█████████ | 18/20 [03:05<00:20, 10.49s/it]epoch val loss: 0.18329792 Acc: 0.59999996
+Epoch 19/20
+----------
+iteration 6100 train loss: 0.06194423 Acc: 1.00000000
+iteration 6200 train loss: 0.20856121 Acc: 0.87500000
+iteration 6300 train loss: 0.05980618 Acc: 1.00000000
+iteration 6400 train loss: 0.49476340 Acc: 0.62500000
+epoch train loss: 0.41239919 Acc: 0.79703707
+ 95%|█████████▌| 19/20 [03:15<00:10, 10.49s/it]epoch val loss: 0.15908014 Acc: 0.61500001
+Epoch 20/20
+----------
+iteration 6500 train loss: 0.79860991 Acc: 0.62500000
+iteration 6600 train loss: 0.20115218 Acc: 0.87500000
+iteration 6700 train loss: 0.39653549 Acc: 0.75000000
+epoch train loss: 0.40754142 Acc: 0.79296297
+100%|██████████| 20/20 [03:26<00:00, 10.48s/it]100%|██████████| 20/20 [03:26<00:00, 10.31s/it]
+epoch val loss: 0.16246286 Acc: 0.61000001
+Best val Acc: 0.6650

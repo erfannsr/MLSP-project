@@ -1,3 +1,10 @@
+################## RECENT RUN #####################
+nohup python3 train_CNN_SupCon_and_CE.py --name '29042025_10epochs_SupConLoss' --train_list 'train.txt' --val_list 'validation.txt' --batch_size=8 --epoches 10 --device 'cuda:0' > train_log_supConL_CE.out 2>&1 &
+python3 get_feature.py -bz 8 --device 'cuda:0' --test_list 'dataset_paths/testGetFeature.txt' --model_path 'output/29042025_10epochs_SupConLoss/best.pkl'
+python3 get_image_info.py -bz 8 --device 'cuda:0' --test_list '/home/erfan/MLSP project/MLSP-project/DFIL/dataset_paths/testGetFeature.txt' --model_path '/home/erfan/MLSP project/MLSP-project/DFIL/output/29042025_10epochs_SupConLoss/best.pkl'
+nohup python3 TaskN_KD.py --name "29042025_Task2_CDDB_GAN_Faces" --train_list "/home/erfan/MLSP project/MLSP-project/DFIL/dataset_paths/train_student.txt" --memory_list "/home/erfan/MLSP project/MLSP-project/DFIL/dataset_paths/full_memory_list.txt" --val_list " /home/erfan/MLSP project/MLSP-project/DFIL/dataset_paths/val_student_data.txt" -bz 8 --epoches 20 --device 'cuda:0' --add_memory True --teacher_model_path "/home/erfan/MLSP project/MLSP-project/DFIL/output/29042025_10epochs_SupConLoss/best.pkl" > logging/train_Task2_CDDB_GAN_Faces.out 2>&1 &
+
+################## OLDER RUNS #####################
 python train_CNN_SupCon_and_CE.py --train_list 'train.txt' --val_list 'validation.txt' --batch_size=16 --epoches 2
 python train_CNN_SupCon_and_CE.py --name 'train_first_model_half_data_10_epochs' --train_list 'train.txt' --val_list 'validation.txt' --batch_size=16 --epoches 10
 python train_CNN_SupCon_and_CE.py --name "train_first_model_2nd_half_data_10_epochs" -tl 'train.txt' -vl 'validation.txt' -bz 16 -e 10 --continue_train True --model_path "/home/erfan/MLSP project/MLSP-project/DFIL/output/train_first_model_half_data_10_epochs/best.pkl"
@@ -15,3 +22,5 @@ nohup python3 train_CNN_SupCon_and_CE.py --name 'train_first_model_10epoch_24042
 nohup python3 get_feature.py -bz 8 --device 'cuda:0' --test_list 'train.txt' --model_path '/home/erfan/MLSP project/MLSP-project/DFIL/output/train_first_model_10epoch_24042025/best.pkl' > logging/get_feature.out 2>&1 &
 nohup python3 get_image_info.py -bz 8 --device 'cuda:0' --test_list 'test.txt' --model_path '/home/erfan/MLSP project/MLSP-project/DFIL/output/train_first_model_10epoch_24042025/best.pkl' > logging/get_image_info_log.out 2>&1 &
 nohup python3 create_memory.py > create_memory_log.out 2>&1 &
+
+

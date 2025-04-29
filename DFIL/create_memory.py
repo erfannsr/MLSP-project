@@ -4,7 +4,7 @@ import numpy as np
 
 if __name__ == '__main__':
     csv_path = ''
-    df = pd.read_csv("29042025_Task3_DFD_by_all_img_info.csv")
+    df = pd.read_csv("/home/erfan/MLSP project/MLSP-project/DFIL/Memory_Set_2/29042025_Task3_DFD_by_all_img_info.csv")
 
 #------------------------------------------------------------------------------------------------ All Center
 
@@ -75,18 +75,18 @@ if __name__ == '__main__':
     df1 = df[df['image_label']==1]
     df0 = df[df['image_label']==0]
     df1 = df1.sort_values('image_entropy',ascending=False)[['image_label','image_info']]
-    df1[:250].to_csv('Memory_Set_New/29042025_DFD_1(250)_sorted_by_entropy.txt',sep=',',index=0,header=0)
+    df1[:75].to_csv('Memory_Set_2/29042025_DFD_1(75)_sorted_by_entropy.txt',sep=',',index=0,header=0)
     
     df0 = df0.sort_values('image_entropy',ascending=False)[['image_label','image_info']]
-    df0[:250].to_csv('Memory_Set_New/29042025_DFD_0(250)_sorted_by_entropy.txt',sep=',',index=0,header=0)
+    df0[:75].to_csv('Memory_Set_2/29042025_DFD_0(75)_sorted_by_entropy.txt',sep=',',index=0,header=0)
     
     df1 = df[df['image_label']==1]
     df0 = df[df['image_label']==0]
     df1 = df1.sort_values('dis2mean',ascending=True)[['image_label','image_info']]
-    df1[:250].to_csv('Memory_Set_New/29042025_DFD_1(250)_sorted_by_dis2mean.txt',sep=',',index=0,header=0)
+    df1[:75].to_csv('Memory_Set_2/29042025_DFD_1(75)_sorted_by_dis2mean.txt',sep=',',index=0,header=0)
     
     df0 = df0.sort_values('dis2mean',ascending=True)[['image_label','image_info']]
-    df0[:250].to_csv('Memory_Set_New/29042025_DFD_0(250)_sorted_by_dis2mean.txt',sep=',',index=0,header=0)
+    df0[:75].to_csv('Memory_Set_2/29042025_DFD_0(75)_sorted_by_dis2mean.txt',sep=',',index=0,header=0)
     
     print("Memory set Created successfully.")
 

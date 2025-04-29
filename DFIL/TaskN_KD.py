@@ -91,9 +91,10 @@ def main():
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=True, drop_last=False, num_workers=8)
     train_dataset_size = len(train_dataset)
     val_dataset_size = len(val_dataset)
-
+    
     # print(train_dataset_size)
-    # print(len(train_loader))
+    # print(val_dataset_size)
+    # # print(len(train_loader))
     # exit()
 
     # LOAD TEACHER MODEL

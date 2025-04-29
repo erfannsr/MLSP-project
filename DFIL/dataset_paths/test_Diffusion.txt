@@ -1,0 +1,2 @@
+0,/home/erfan/MLSP project/Datasets/Diffusion_faces_split/test/Real
+1,/home/erfan/MLSP project/Datasets/Diffusion_faces_split/test/Fake

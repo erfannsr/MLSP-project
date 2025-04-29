@@ -35,110 +35,173 @@ def return_pytorch04_xception(pretrained=False):
     return model
 
 
+# class TransferModel(nn.Module):
+#     """
+#     Simple transfer learning model that takes an imagenet pretrained model with
+#     a fc layer as base model and retrains a new fc layer for num_out_classes
+#     """
+#     def __init__(self, modelchoice, num_out_classes=2, dropout=0.5):
+#         super(TransferModel, self).__init__()
+#         self.modelchoice = modelchoice
+#         if modelchoice == 'xception':
+#             self.model = return_pytorch04_xception(pretrained=False)
+#             print('pretrained true')
+#             # Replace fc
+#             num_ftrs = self.model.last_linear.in_features
+#             if not dropout:
+#                 self.model.last_linear = nn.Linear(num_ftrs, num_out_classes)
+#             else:
+#                 print('Using dropout', dropout)
+#                 self.model.last_linear = nn.Sequential(
+#                     nn.Dropout(p=dropout),
+#                     nn.Linear(num_ftrs, num_out_classes)
+#                 )
+#         elif modelchoice == 'xception_concat':
+#             self.model = xception_concat()
+#             num_ftrs = self.model.last_linear.in_features
+#             if not dropout:
+#                 self.model.last_linear = nn.Linear(num_ftrs, num_out_classes)
+#             else:
+#                 print('Using dropout', dropout)
+#                 self.model.last_linear = nn.Sequential(
+#                     nn.Dropout(p=dropout),
+#                     nn.Linear(num_ftrs, num_out_classes)
+#                 )
+#         elif modelchoice == 'resnet50' or modelchoice == 'resnet18':
+#             if modelchoice == 'resnet50':
+#                 self.model = torchvision.models.resnet50(pretrained=True)
+#             if modelchoice == 'resnet18':
+#                 self.model = torchvision.models.resnet18(pretrained=True)
+#             # Replace fc
+#             num_ftrs = self.model.fc.in_features
+#             if not dropout:
+#                 self.model.fc = nn.Linear(num_ftrs, num_out_classes)
+#             else:
+#                 self.model.fc = nn.Sequential(
+#                     nn.Dropout(p=dropout),
+#                     nn.Linear(num_ftrs, num_out_classes)
+#                 )
+#         elif modelchoice == 'get_feature':
+#             self.model = return_pytorch04_xception(pretrained=False)
+#             # Replace fc
+#             num_ftrs = self.model.last_linear.in_features
+#             if not dropout:
+#                 self.model.last_linear = nn.Linear(num_ftrs, num_out_classes)
+#             else:
+#                 print('Using dropout', dropout)
+#                 self.model.last_linear = nn.Sequential(
+#                     nn.Dropout(p=dropout),
+#                 )
+#         else:
+#             raise Exception('Choose valid model, e.g. resnet50')
+
+#     def set_trainable_up_to(self, boolean, layername="Conv2d_4a_3x3"):
+#         """
+#         Freezes all layers below a specific layer and sets the following layers
+#         to true if boolean else only the fully connected final layer
+#         :param boolean:
+#         :param layername: depends on network, for inception e.g. Conv2d_4a_3x3
+#         :return:
+#         """
+#         # Stage-1: freeze all the layers
+#         if layername is None:
+#             for i, param in self.model.named_parameters():
+#                 param.requires_grad = True
+#                 return
+#         else:
+#             for i, param in self.model.named_parameters():
+#                 param.requires_grad = False
+#         if boolean:
+#             # Make all layers following the layername layer trainable
+#             ct = []
+#             found = False
+#             for name, child in self.model.named_children():
+#                 if layername in ct:
+#                     found = True
+#                     for params in child.parameters():
+#                         params.requires_grad = True
+#                 ct.append(name)
+#             if not found:
+#                 raise Exception('Layer not found, cant finetune!'.format(
+#                     layername))
+#         else:
+#             if self.modelchoice == 'xception':
+#                 # Make fc trainable
+#                 for param in self.model.last_linear.parameters():
+#                     param.requires_grad = True
+
+#             else:
+#                 # Make fc trainable
+#                 for param in self.model.fc.parameters():
+#                     param.requires_grad = True
+
+#     def forward(self, x):
+#         x = self.model(x)
+#         return x
+
 class TransferModel(nn.Module):
-    """
-    Simple transfer learning model that takes an imagenet pretrained model with
-    a fc layer as base model and retrains a new fc layer for num_out_classes
-    """
     def __init__(self, modelchoice, num_out_classes=2, dropout=0.5):
         super(TransferModel, self).__init__()
         self.modelchoice = modelchoice
-        if modelchoice == 'xception':
-            self.model = return_pytorch04_xception(pretrained=False)
-            print('pretrained true')
-            # Replace fc
-            num_ftrs = self.model.last_linear.in_features
-            if not dropout:
-                self.model.last_linear = nn.Linear(num_ftrs, num_out_classes)
-            else:
-                print('Using dropout', dropout)
-                self.model.last_linear = nn.Sequential(
-                    nn.Dropout(p=dropout),
-                    nn.Linear(num_ftrs, num_out_classes)
-                )
-        elif modelchoice == 'xception_concat':
-            self.model = xception_concat()
-            num_ftrs = self.model.last_linear.in_features
-            if not dropout:
-                self.model.last_linear = nn.Linear(num_ftrs, num_out_classes)
-            else:
-                print('Using dropout', dropout)
-                self.model.last_linear = nn.Sequential(
-                    nn.Dropout(p=dropout),
-                    nn.Linear(num_ftrs, num_out_classes)
-                )
-        elif modelchoice == 'resnet50' or modelchoice == 'resnet18':
-            if modelchoice == 'resnet50':
-                self.model = torchvision.models.resnet50(pretrained=True)
-            if modelchoice == 'resnet18':
-                self.model = torchvision.models.resnet18(pretrained=True)
-            # Replace fc
-            num_ftrs = self.model.fc.in_features
-            if not dropout:
-                self.model.fc = nn.Linear(num_ftrs, num_out_classes)
-            else:
-                self.model.fc = nn.Sequential(
-                    nn.Dropout(p=dropout),
-                    nn.Linear(num_ftrs, num_out_classes)
-                )
-        elif modelchoice == 'get_feature':
-            self.model = return_pytorch04_xception(pretrained=False)
-            # Replace fc
-            num_ftrs = self.model.last_linear.in_features
-            if not dropout:
-                self.model.last_linear = nn.Linear(num_ftrs, num_out_classes)
-            else:
-                print('Using dropout', dropout)
-                self.model.last_linear = nn.Sequential(
-                    nn.Dropout(p=dropout),
-                )
-        else:
-            raise Exception('Choose valid model, e.g. resnet50')
+        
+        if modelchoice == 'resnet18':
+            backbone = torchvision.models.resnet18(pretrained=True)
+            self.feature_extractor = nn.Sequential(*list(backbone.children())[:-1])  # everything except the fc
+            self.feature_dim = backbone.fc.in_features
 
-    def set_trainable_up_to(self, boolean, layername="Conv2d_4a_3x3"):
+            if not dropout:
+                self.classifier = nn.Linear(self.feature_dim, num_out_classes)
+            else:
+                self.classifier = nn.Sequential(
+                    nn.Dropout(p=dropout),
+                    nn.Linear(self.feature_dim, num_out_classes)
+                )
+
+        # You can do similar branching for other models...
+
+        else:
+            raise Exception('Choose valid model, e.g. resnet18')
+
+    def forward(self, x, return_features=False):
+        # Pass through all feature extractor layers except the last (avgpool)
+        for i, layer in enumerate(self.feature_extractor):
+            if i == 8:  # adaptive avgpool is at index 8
+                break
+            x = layer(x)
+
+        features = x  # these are the features just before avgpool
+
+        # If needed, complete the rest of the forward pass
+        x = self.feature_extractor[8](x)  # apply avgpool
+        x = torch.flatten(x, 1)
+        x = self.classifier(x)
+
+        return x, features
+
+    # def forward(self, x, return_features=False):
+    #     x = self.feature_extractor(x)
+    #     features = x
+        
+    #     x = torch.flatten(x, 1)  # flatten to (batch_size, feature_dim)
+        
+    #     # features = x
+
+    #     # if return_features:
+    #     #     return x  # return the feature vector before classification
+
+    #     x = self.classifier(x)
+    #     return x, features
+    
+    def set_trainable_layers(self, train_from_idx):
         """
-        Freezes all layers below a specific layer and sets the following layers
-        to true if boolean else only the fully connected final layer
-        :param boolean:
-        :param layername: depends on network, for inception e.g. Conv2d_4a_3x3
-        :return:
+        Freezes all layers in the feature extractor up to index `train_from_idx - 1`,
+        and unfreezes layers from `train_from_idx` onward.
         """
-        # Stage-1: freeze all the layers
-        if layername is None:
-            for i, param in self.model.named_parameters():
-                param.requires_grad = True
-                return
-        else:
-            for i, param in self.model.named_parameters():
-                param.requires_grad = False
-        if boolean:
-            # Make all layers following the layername layer trainable
-            ct = []
-            found = False
-            for name, child in self.model.named_children():
-                if layername in ct:
-                    found = True
-                    for params in child.parameters():
-                        params.requires_grad = True
-                ct.append(name)
-            if not found:
-                raise Exception('Layer not found, cant finetune!'.format(
-                    layername))
-        else:
-            if self.modelchoice == 'xception':
-                # Make fc trainable
-                for param in self.model.last_linear.parameters():
-                    param.requires_grad = True
-
-            else:
-                # Make fc trainable
-                for param in self.model.fc.parameters():
-                    param.requires_grad = True
-
-    def forward(self, x):
-        x = self.model(x)
-        return x
-
+        for i, layer in enumerate(self.feature_extractor):
+            requires_grad = i >= train_from_idx
+            for param in layer.parameters():
+                param.requires_grad = requires_grad
+    
 
 def model_selection(modelname, num_out_classes,
                     dropout=None):

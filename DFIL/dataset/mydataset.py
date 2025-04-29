@@ -37,20 +37,26 @@ class MyDataset(Dataset):
                 words = line.split(',')
                 # print(words[0],words[1])
                 # print(words)
+                # exit()
                 # print (words[2].rjust(5,'0'))
                 # print(words)
                 # break
 
-                image_file = words[1]
-                path = os.path.join(image_file,'*.jpg')
-                image_filenames = sorted(glob.glob(path))
+                image_folder = words[1]
+                extensions = ['*.jpg', '*.jpeg', '*.png']
+                image_filenames = []
+                for ext in extensions:
+                    path = os.path.join(image_folder, ext) # '*.jpeg' or '*.jpg' if no images are returned
+                    image_filenames.extend(glob.glob(path))
+                
+                # image_filenames = sorted(glob.glob(path))
                 # print(path)
                 # print(image_filenames)
-                # break
+                # exit()
                 #imgs.append((words[1]+'/out'+words[2].rjust(5,'0')+'.png', int(words[0])))
                 for i in image_filenames:
                     imgs.append((i, int(words[0])))
-            random.shuffle(imgs)
+            # random.shuffle(imgs)
             # print(imgs[0], imgs[1000], imgs[5000], imgs[-1]) # to check if its reading images-labels correctly
              # exit()
             # fh = open(txt_path, 'r')
@@ -81,29 +87,29 @@ class MyDataset(Dataset):
                 words = line.split(',')
                 imgs.append((words[1], int(words[0])))
     
-        # else:
-        #     print("????")
-        #     fh = open(txt_path, 'r')
-        #     for line in fh:
-        #         line = line.rstrip()
-        #         words = line.split(',')
-        #         #print(words[0],words[1])
-        #         # print(words)
-        #         # print (words[2].rjust(5,'0'))
-        #         # print(words)
-        #         # break
+        else:
+            print("????")
+            fh = open(txt_path, 'r')
+            for line in fh:
+                line = line.rstrip()
+                words = line.split(',')
+                #print(words[0],words[1])
+                # print(words)
+                # print (words[2].rjust(5,'0'))
+                # print(words)
+                # break
 
-        #         image_file = words[1]
-        #         path = os.path.join(image_file,'*.jpg')
-        #         image_filenames = sorted(glob.glob(path))
-        #         print(path)
+                image_file = words[1]
+                path = os.path.join(image_file,'*.jpg')
+                image_filenames = sorted(glob.glob(path))
+                # print(path)
                 
                 # print(image_filenames)
                 # exit()
 
-                #imgs.append((words[1]+'/out'+words[2].rjust(5,'0')+'.png', int(words[0])))
-                # for i in image_filenames:
-                #     imgs.append((i, int(words[0])))
+                # imgs.append((words[1]+'/out'+words[2].rjust(5,'0')+'.png', int(words[0])))
+                for i in image_filenames:
+                    imgs.append((i, int(words[0])))
                 # print(imgs[0], imgs[1])
 
         print("the number of images: ",len(imgs))

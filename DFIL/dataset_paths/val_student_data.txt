@@ -1,2 +1,2 @@
-0,/home/erfan/MLSP project/Datasets/CDDB_GAN_faces/val/real
-1,/home/erfan/MLSP project/Datasets/CDDB_GAN_faces/val/fake
+0,/home/erfan/MLSP project/Datasets/Diffusion_faces_split/val/Real
+1,/home/erfan/MLSP project/Datasets/Diffusion_faces_split/val/Fake
